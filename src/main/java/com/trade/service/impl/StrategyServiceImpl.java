@@ -1,8 +1,18 @@
 package com.trade.service.impl;
 
+import com.trade.service.DataService;
 import com.trade.service.StrategyService;
+import com.trade.utils.CapitalUtil;
+import com.trade.vo.DailyVo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,69 +22,78 @@ import java.util.Map;
  * @Date 2020-01-09 下午 4:32
  * @DESC TODO
  */
+@Service
 public class StrategyServiceImpl implements StrategyService {
+
+    public static final DateTimeFormatter SHORT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+
+    @Autowired
+    private DataService dataService;
 
     private Map<String, String>  assetMap; // 资产
     private BigDecimal totalCapital = BigDecimal.valueOf(100000.00); // 总资金
     private BigDecimal riskParameter; // 风险系数
+    private String startDate = "20190101";
+    private String endDate = "20191231";
+    private int atrPeriod = 30;
 
-    /**
-     * 计算本次交易的额度
-     */
-    private BigDecimal getTradeCapital(){
+    @Override
+    public void process(){
+        /************************** 一，计算atr ******************************/
+        // 获取数据
+        List<DailyVo> datas = this.getData("000100.SZ", startDate, endDate);
 
-        return null;
+        // 第N个交易日, 0开始
+        int day = 0;
+        BigDecimal dailyAtr = getDailyAtr(datas, day);
     }
 
-    private static class CapitalUtil{
+    /**
+     * 获取每日atr
+     * @param datas 数据集合
+     * @param day 第几日， 0 开始
+     * @return
+     */
+    private BigDecimal getDailyAtr(List<DailyVo> datas, int day) {
 
-        /**
-             * 获取容许交易量（手）
-             * @param totalCapital 总资金
-             * @param riskParameter 风险系数
-             * @param atr   真实波动幅度
-             * @param unit  交易单元，如一手100
-             * @return
-         */
-        public int getTradeVolume(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal atr, int unit){
-            BigDecimal tradeCapital = CapitalUtil.getTradeCapital(totalCapital, riskParameter);
-            return tradeCapital.divide(atr.multiply(BigDecimal.valueOf(unit)), 0, BigDecimal.ROUND_DOWN).intValue();
+        List<DailyVo> dailyVos = datas.subList(datas.size() - atrPeriod - 1 - day, datas.size() - day); // 有 atrPeriod  + 1 条数据
+        List<BigDecimal> highs = new ArrayList<>();
+        List<BigDecimal> lows = new ArrayList<>();
+        List<BigDecimal> closes = new ArrayList<>();
+
+        for (int i = dailyVos.size() - 1; i >= 0; i--) {
+            if(i == (dailyVos.size() - 1) ) continue;
+            DailyVo yesterdayDailyVo = dailyVos.get(i + 1); // 昨天
+            DailyVo todayDailyVo = dailyVos.get(i);         // 今天
+
+            highs.add(new BigDecimal(todayDailyVo.getHigh()));
+            lows.add(new BigDecimal(todayDailyVo.getLow()));
+            closes.add(new BigDecimal(yesterdayDailyVo.getClose()));
         }
 
-        /**
-            * 获取本次容许最大的交易额
-            * @param totalCapital     总资金
-            * @param riskParameter    风险系数
-            * @return
-        */
-        public static BigDecimal getTradeCapital(BigDecimal totalCapital, BigDecimal riskParameter){
-            return totalCapital.multiply(riskParameter).divide(BigDecimal.valueOf(10000), 2, BigDecimal.ROUND_HALF_UP);
-        }
-
-        /**
-            * ATR
-            * @param highs 最高价 n
-            * @param lows  最低价 n
-            * @param closes 昨收  n+1
-            * @param period 周期
-            * @return
-        */
-         public static BigDecimal atr(List<BigDecimal> highs, List<BigDecimal> lows, List<BigDecimal> closes, int period){
-             List<BigDecimal> trList = new ArrayList<>();
-             for(int i = 0; i < period; i++){
-                 double hl = Math.abs(highs.get(i).subtract(lows.get(i)).doubleValue());
-                 double hc = Math.abs(highs.get(i).subtract(closes.get(i)).doubleValue());
-                 double lc = Math.abs(lows.get(i).subtract(closes.get(i)).doubleValue());
-
-                 double tr = Math.max(Math.max(hl, hc), lc); // 获取最大波动
-                 trList.add(BigDecimal.valueOf(tr));
-             }
-
-             double average = trList.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble();
-             return BigDecimal.valueOf(average);
-         }
+        BigDecimal atr = CapitalUtil.atr(highs, lows, closes, atrPeriod);
+        return atr;
+    }
 
 
+    /**
+     * 获取数据  - 获取 开始时间 - atr周期 到 结束时间的所有数据
+     */
+    private List<DailyVo> getData(String tsCode, String startDate, String endDate){
+        List<DailyVo> datas = new ArrayList<>();
+        // 获取前 atrPeriod 天的数据，用来计算atr
+        LocalDate startDateL = LocalDate.parse(startDate, SHORT_DATE_FORMATTER).minus(atrPeriod * 2, ChronoUnit.DAYS );
+        LocalDate endDateL = LocalDate.parse(startDate, SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
+        List<DailyVo> atrPeriodDailyList = dataService.daily(tsCode, startDateL.format(SHORT_DATE_FORMATTER), endDateL.format(SHORT_DATE_FORMATTER));
+
+        // 获取常规数据
+        List<DailyVo> dailys = dataService.daily(tsCode, startDate, endDate);
+
+        // 组织数据
+        datas.addAll(dailys);
+        datas.addAll(atrPeriodDailyList.subList(0 , atrPeriod)); // 获取第atrPeriod的子集合
+        return datas;
     }
 
 

@@ -6,4 +6,5 @@ package com.trade.service;
  * @DESC TODO
  */
 public interface StrategyService {
+    void process();
 }

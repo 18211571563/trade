@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: trade
+
+server:
+  port: 3001
+
+
+# HttpClient配置
+http:
+  client:
+    connection:
+      maxTotal: 200
+      defaultMaxPerRoute: 20
+    request:
+      connectionRequestTimeout: 500
+      connectTimeout: 1000
+      socketTimeout: 600000
+
+# 服务地址
+message:
+  url: http://10.73.129.226:3000
+  service:
+    daily: /daily/<ts_code>/<start_date>/<end_date>
+
+##日志文件配置
+logging:
+  config: classpath:logback.xml
