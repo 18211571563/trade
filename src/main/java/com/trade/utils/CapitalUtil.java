@@ -1,5 +1,7 @@
 package com.trade.utils;
 
+import com.trade.vo.DailyVo;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,33 @@ import java.util.List;
  * @DESC TODO
  */
 public class CapitalUtil {
+
+    /**
+     * 获取每日atr
+     * @param datas 数据集合
+     * @param day 第几日， 0 开始
+     * @return
+     */
+    public static BigDecimal getDailyAtr(List<DailyVo> datas, int day, int atrPeriod) {
+
+        List<DailyVo> dailyVos = datas.subList(datas.size() - atrPeriod - 1 - day, datas.size() - day); // 有 atrPeriod  + 1 条数据
+        List<BigDecimal> highs = new ArrayList<>();
+        List<BigDecimal> lows = new ArrayList<>();
+        List<BigDecimal> closes = new ArrayList<>();
+
+        for (int i = dailyVos.size() - 1; i >= 0; i--) {
+            if(i == (dailyVos.size() - 1) ) continue;
+            DailyVo yesterdayDailyVo = dailyVos.get(i + 1); // 昨天
+            DailyVo todayDailyVo = dailyVos.get(i);         // 今天
+
+            highs.add(new BigDecimal(todayDailyVo.getHigh()));
+            lows.add(new BigDecimal(todayDailyVo.getLow()));
+            closes.add(new BigDecimal(yesterdayDailyVo.getClose()));
+        }
+
+        BigDecimal atr = CapitalUtil.atr(highs, lows, closes, atrPeriod);
+        return atr;
+    }
 
     /**
      * 获取容许交易量（手）
