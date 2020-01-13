@@ -36,7 +36,7 @@ public class StrategyServiceImpl implements StrategyService {
     private static BigDecimal totalCapital = BigDecimal.valueOf(100000.00); // 总资金
     private static BigDecimal riskParameter; // 风险系数
     private static String startDate = "20190101";
-    private static String endDate = "20190201";
+    private static String endDate = "20190701";
     private static int atrPeriod = 30;
     private static int breakOpenDay = 50;
     private static int breakCloseDay = 25;
@@ -115,31 +115,33 @@ public class StrategyServiceImpl implements StrategyService {
         DailyVo maxClose = CapitalUtil.getMax(breakCloseDailyVo);
         DailyVo minClose = CapitalUtil.getMin(breakCloseDailyVo);
 
-        if(orderVo != null){
-
-            if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxClose.getClose())) > 0){ // 判断是否当前价大于突破价，如果是，进行平空操作
-                // 判断是否持有空头头寸
+        if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxClose.getClose())) > 0){ // 判断是否当前价大于突破价，如果是，进行平空操作
+            // 判断是否持有空头头寸
+            if(orderVo != null){
                 if(orderVo.getDirection() == 0){
                     tradeLogger.info("止损 - 平空, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
                     tradeOrders.remove(orderVo);
 
                 }else{
-                    logger.info("止损 - 没有持有空头头寸, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
+                    logger.info("止损 - 没有 空头 头寸无需止损, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
                 }
+            }else{
+                logger.info("止损 - 没有头寸无需止损, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
+            }
 
-            }else if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minClose.getClose())) < 0){ // 判断是否当前价小于突破价，如果是，进行平多操作
-                // 判断是否持有多头头寸
+        }else if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minClose.getClose())) < 0){ // 判断是否当前价小于突破价，如果是，进行平多操作
+            // 判断是否持有多头头寸
+            if(orderVo != null){
                 if(orderVo.getDirection() == 1){
                     tradeLogger.info("止损 - 平头, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
                     tradeOrders.remove(orderVo);
 
                 }else{
-                    logger.info("止损 - 没有持有多头头寸, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
+                    logger.info("止损 - 没有 多头 头寸无需止损, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
                 }
+            }else{
+                logger.info("止损 - 没有头寸无需止损, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
             }
-
-        }else{
-            logger.info("没有仓位无需止损, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
         }
 
 
