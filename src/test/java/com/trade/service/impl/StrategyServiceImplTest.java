@@ -5,9 +5,14 @@ import com.trade.service.StrategyService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import static org.junit.Assert.*;
 
 public class StrategyServiceImplTest extends BaseTest {
+
+    public static final DateTimeFormatter SHORT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     @Autowired
     private StrategyService strategyService;
@@ -16,4 +21,5 @@ public class StrategyServiceImplTest extends BaseTest {
     public void process() {
         strategyService.process();
     }
+
 }

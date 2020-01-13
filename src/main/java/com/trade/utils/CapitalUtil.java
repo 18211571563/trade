@@ -9,9 +9,41 @@ import java.util.List;
 /**
  * @Author georgy
  * @Date 2020-01-10 下午 3:26
- * @DESC TODO
+ * @DESC 计算工具类
  */
 public class CapitalUtil {
+
+    /**
+     * 获取最大值
+     * @param datas
+     * @return
+     */
+    public static DailyVo getMax(List<DailyVo> datas){
+        DailyVo data = null;
+        for (DailyVo dailyVo : datas) {
+            if(data == null ) data = dailyVo;
+            if(new BigDecimal(dailyVo.getClose()).compareTo(new BigDecimal(data.getClose())) > 0){
+                data = dailyVo;
+            }
+         }
+        return data;
+    }
+
+    /**
+     * 获取最小值
+     * @param datas
+     * @return
+     */
+    public static DailyVo getMin(List<DailyVo> datas){
+        DailyVo data = null;
+        for (DailyVo dailyVo : datas) {
+            if(data == null ) data = dailyVo;
+            if(new BigDecimal(dailyVo.getClose()).compareTo(new BigDecimal(data.getClose())) < 0){
+                data = dailyVo;
+            }
+        }
+        return data;
+    }
 
     /**
      * 获取每日atr

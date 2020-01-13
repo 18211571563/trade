@@ -22,6 +22,7 @@ message:
   url: http://10.73.129.226:3000
   service:
     daily: /daily/<ts_code>/<start_date>/<end_date>
+    trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
 
 ##日志文件配置
 logging:
