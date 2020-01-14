@@ -8,5 +8,5 @@ package com.trade.service;
 public interface StrategyService {
     void process();
 
-    void process(String date);
+    void process(String tsCode,String date);
 }

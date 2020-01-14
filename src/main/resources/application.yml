@@ -1,6 +1,20 @@
 spring:
   application:
     name: trade
+  redis:
+    database: 1
+    host: 10.73.129.226
+    port: 6379
+    timeout: 2000
+    jedis:
+      pool:
+        min-idle: 50
+        max-idle: 500
+        max-active: 2000
+        max-wait: 1000
+
+
+
 
 server:
   port: 3001

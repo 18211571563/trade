@@ -46,29 +46,27 @@ public class CapitalUtil {
     }
 
     /**
-     * 获取每日atr
+     * 计算每日 atr
      * @param datas 数据集合
-     * @param day 第几日， 0 开始
      * @return
      */
-    public static BigDecimal getDailyAtr(List<DailyVo> datas, int day, int atrPeriod) {
+    public static BigDecimal getDailyAtr(List<DailyVo> datas) {
 
-        List<DailyVo> dailyVos = datas.subList(datas.size() - atrPeriod - 1 - day, datas.size() - day); // 有 atrPeriod  + 1 条数据
         List<BigDecimal> highs = new ArrayList<>();
         List<BigDecimal> lows = new ArrayList<>();
         List<BigDecimal> closes = new ArrayList<>();
 
-        for (int i = dailyVos.size() - 1; i >= 0; i--) {
-            if(i == (dailyVos.size() - 1) ) continue;
-            DailyVo yesterdayDailyVo = dailyVos.get(i + 1); // 昨天
-            DailyVo todayDailyVo = dailyVos.get(i);         // 今天
+        for (int i = datas.size() - 1; i >= 0; i--) {
+            if(i == (datas.size() - 1) ) continue;
+            DailyVo yesterdayDailyVo = datas.get(i + 1); // 昨天
+            DailyVo todayDailyVo = datas.get(i);         // 今天
 
             highs.add(new BigDecimal(todayDailyVo.getHigh()));
             lows.add(new BigDecimal(todayDailyVo.getLow()));
             closes.add(new BigDecimal(yesterdayDailyVo.getClose()));
         }
 
-        BigDecimal atr = CapitalUtil.atr(highs, lows, closes, atrPeriod);
+        BigDecimal atr = CapitalUtil.atr(highs, lows, closes);
         return atr;
     }
 
@@ -80,7 +78,7 @@ public class CapitalUtil {
      * @param unit  交易单元，如一手100
      * @return
      */
-    public int getTradeVolume(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal atr, int unit){
+    public static int getTradeVolume(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal atr, int unit){
         BigDecimal tradeCapital = CapitalUtil.getTradeCapital(totalCapital, riskParameter);
         return tradeCapital.divide(atr.multiply(BigDecimal.valueOf(unit)), 0, BigDecimal.ROUND_DOWN).intValue();
     }
@@ -100,10 +98,12 @@ public class CapitalUtil {
      * @param highs 最高价 n
      * @param lows  最低价 n
      * @param closes 昨收  n+1
-     * @param period 周期
      * @return
      */
-    public static BigDecimal atr(List<BigDecimal> highs, List<BigDecimal> lows, List<BigDecimal> closes, int period){
+    public static BigDecimal atr(List<BigDecimal> highs, List<BigDecimal> lows, List<BigDecimal> closes){
+        if(lows.size() != highs.size() || lows.size() != closes.size()){throw new RuntimeException("ATR数据错误");}
+        int period = lows.size();
+
         List<BigDecimal> trList = new ArrayList<>();
         for(int i = 0; i < period; i++){
             double hl = Math.abs(highs.get(i).subtract(lows.get(i)).doubleValue());

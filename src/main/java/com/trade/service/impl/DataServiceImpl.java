@@ -8,6 +8,8 @@ import com.trade.vo.DailyVo;
 import com.trade.vo.TradeDateVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -22,6 +24,7 @@ import java.util.List;
  * @DESC TODO
  */
 @Service
+@CacheConfig(cacheNames = {"DataService"})
 public class DataServiceImpl implements DataService {
 
     @Autowired
@@ -40,6 +43,7 @@ public class DataServiceImpl implements DataService {
      * @return
      */
     @Override
+    @Cacheable(key = "'tradeCal-'+#exchange+'-'+#start_date+'-'+#end_date")
     public List<TradeDateVo> tradeCal(String exchange, String start_date, String end_date){
         String url = BASE_URL + TRADE_CAL
                 .replaceAll("<exchange>", exchange)
@@ -56,6 +60,7 @@ public class DataServiceImpl implements DataService {
      * @return
      */
     @Override
+    @Cacheable(key = "'tradeCal-'+#start_date")
     public boolean tradeCal(String start_date){
         List<TradeDateVo> tradeDateVos = this.tradeCal("SSE", start_date, start_date);
         if(!CollectionUtils.isEmpty(tradeDateVos)){
@@ -73,7 +78,15 @@ public class DataServiceImpl implements DataService {
      * @return
      */
     @Override
+    @Cacheable(key = "'daily-'+#ts_code+'-'+#start_date+'-'+#end_date")
     public List<DailyVo> daily(String ts_code, String start_date, String end_date){
+        // 由于每分钟最多调用60次，所以控制一下
+        try {
+            Thread.sleep(800);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         String url = BASE_URL + DAILY
                 .replaceAll("<ts_code>", ts_code)
                 .replaceAll("<start_date>", start_date)
@@ -91,18 +104,12 @@ public class DataServiceImpl implements DataService {
      * @return
      */
     @Override
+    @Cacheable(key = "'daily-'+#ts_code+'-'+#start_date+'-'+#back_day")
     public List<DailyVo> daily(String ts_code, String start_date, int back_day){
-        LocalDate startDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day * 2, ChronoUnit.DAYS );
+        LocalDate startDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day, ChronoUnit.DAYS );
         LocalDate endDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
-
-
-        String url = BASE_URL + DAILY
-                .replaceAll("<ts_code>", ts_code)
-                .replaceAll("<start_date>", startDateL.format(TimeUtil.SHORT_DATE_FORMATTER))
-                .replaceAll("<end_date>", endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
-        String response = restTemplate.getForObject(url, String.class);
-        List<DailyVo> data = JSON.parseObject(response, new TypeReference<List<DailyVo>>(){});
-        return data.subList(0, back_day);
+        List<DailyVo> data = this.daily(ts_code,startDateL.format(TimeUtil.SHORT_DATE_FORMATTER),  endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
+        return data;
     }
 
 }

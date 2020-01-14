@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.trade.service.CalculateService;
 import com.trade.service.DataService;
 import com.trade.service.StrategyService;
+import com.trade.service.TradeService;
 import com.trade.utils.CapitalUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
@@ -32,25 +33,21 @@ import java.util.Map;
 public class StrategyServiceImpl implements StrategyService {
 
     private static String tsCode = "000100.SZ";
-    private static Map<String, String>  assetMap; // 资产
-    private static BigDecimal totalCapital = BigDecimal.valueOf(100000.00); // 总资金
-    private static BigDecimal riskParameter; // 风险系数
+    private static int unit = 100;
     private static String startDate = "20190101";
-    private static String endDate = "20190701";
-    private static int atrPeriod = 30;
-    private static int breakOpenDay = 50;
-    private static int breakCloseDay = 25;
-
-    private static List<OrderVo> tradeOrders = new ArrayList<>();
-
+    private static String endDate = "20191231";
+    private static Map<String, String>  assetMap; // 资产
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
+    Logger asset = LoggerFactory.getLogger("asset");
 
     @Autowired
     private DataService dataService;
     @Autowired
     private CalculateService calculateService;
+    @Autowired
+    private TradeService tradeService;
 
     @Override
     public void process(){
@@ -61,44 +58,61 @@ public class StrategyServiceImpl implements StrategyService {
         for(int i = 0; endDateL.compareTo(dateL) >= 0; dateL = dateL.plusDays(1)){
             String date = dateL.format(TimeUtil.SHORT_DATE_FORMATTER);
             if(dataService.tradeCal(date)){
-                this.process(date);
+                this.process(tsCode, date);
             }else{
                 logger.warn("非交易日:{}", date);
             }
         }
+        asset.info(TradeService.assetVo.getTotalCapital().toString());
     }
 
     @Override
-    public void process(String date){
+    public void process(String tsCode, String date){
         // 获取今日行情
         DailyVo daily = dataService.daily(tsCode, date, date).get(0);
         // 获取仓位信息
-        OrderVo orderVo = calculateService.getOrder(tradeOrders, tsCode);
+        OrderVo orderVo = tradeService.getOrderVo(tsCode);
 
         /***************************************************************** open ************************************************************************/
         // 计算突破点
-        List<DailyVo> breakOpenDailyVo = dataService.daily(tsCode, date, breakOpenDay);
+        List<DailyVo> breakOpenDailyVo = dataService.daily(tsCode, date, TradeService.breakOpenDay);
         DailyVo maxOpen = CapitalUtil.getMax(breakOpenDailyVo);
         DailyVo minOpen = CapitalUtil.getMin(breakOpenDailyVo);
 
         if(orderVo == null){
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxOpen.getClose())) > 0){
-                tradeLogger.info("交易 - 开多, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
+                // 计算交易量
+                BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, TradeService.atrPeriod); // 获取今日 ATR
+                int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, unit);
+
                 OrderVo tradeOrderVo = new OrderVo(daily.getTs_code(),
                                                 1,
                                                 new BigDecimal(daily.getClose()),
-                                                new BigDecimal("1"),
+                                                BigDecimal.valueOf(tradeVolume * unit),
                                                 LocalDateTime.now());
-                tradeOrders.add(tradeOrderVo);
+                tradeService.open(tradeOrderVo);
+                tradeLogger.info("交易 - 开多, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}" ,
+                        tradeOrderVo.getPrice(),
+                        tradeOrderVo.getVolume(),
+                        date ,
+                        JSON.toJSONString(tradeOrderVo));
 
             }else if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minOpen.getClose())) < 0){
-                tradeLogger.info("交易 - 开空, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
+                // 计算交易量
+                BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, TradeService.atrPeriod); // 获取今日 ATR
+                int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, unit);
+
                 OrderVo tradeOrderVo = new OrderVo(daily.getTs_code(),
                                                 0,
                                                 new BigDecimal(daily.getClose()),
-                                                new BigDecimal("1"),
+                                                BigDecimal.valueOf(tradeVolume * unit),
                                                 LocalDateTime.now());
-                tradeOrders.add(tradeOrderVo);
+                tradeService.open(tradeOrderVo);
+                tradeLogger.info("交易 - 开空, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}" ,
+                        tradeOrderVo.getPrice(),
+                        tradeOrderVo.getVolume(),
+                        date ,
+                        JSON.toJSONString(tradeOrderVo));
 
             }else{
                 logger.info("交易 - 无  ，交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
@@ -109,9 +123,9 @@ public class StrategyServiceImpl implements StrategyService {
         }
 
 
-        /***************************************************************** close ************************************************************************/
+        /***************************************************************** 止损 ************************************************************************/
         // 计算突破点
-        List<DailyVo> breakCloseDailyVo = dataService.daily(tsCode, date, breakCloseDay);
+        List<DailyVo> breakCloseDailyVo = dataService.daily(tsCode, date, TradeService.breakCloseDay);
         DailyVo maxClose = CapitalUtil.getMax(breakCloseDailyVo);
         DailyVo minClose = CapitalUtil.getMin(breakCloseDailyVo);
 
@@ -119,8 +133,14 @@ public class StrategyServiceImpl implements StrategyService {
             // 判断是否持有空头头寸
             if(orderVo != null){
                 if(orderVo.getDirection() == 0){
-                    tradeLogger.info("止损 - 平空, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
-                    tradeOrders.remove(orderVo);
+                    tradeService.close(orderVo, new BigDecimal(daily.getClose()));
+
+                    tradeLogger.info("止损 - 平空, 开仓价格:{}, 平仓价格: {}, 交易量:{}, 交易日:{}, 数据:{}" ,
+                            orderVo.getPrice(),
+                            daily.getClose(),
+                            orderVo.getVolume(),
+                            date ,
+                            JSON.toJSONString(orderVo));
 
                 }else{
                     logger.info("止损 - 没有 空头 头寸无需止损, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
@@ -133,8 +153,13 @@ public class StrategyServiceImpl implements StrategyService {
             // 判断是否持有多头头寸
             if(orderVo != null){
                 if(orderVo.getDirection() == 1){
-                    tradeLogger.info("止损 - 平头, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
-                    tradeOrders.remove(orderVo);
+                    tradeService.close(orderVo, new BigDecimal(daily.getClose()));
+                    tradeLogger.info("止损 - 平多, 开仓价格:{}, 平仓价格: {}, 交易量:{}, 交易日:{}, 数据:{}" ,
+                            orderVo.getPrice(),
+                            daily.getClose(),
+                            orderVo.getVolume(),
+                            date ,
+                            JSON.toJSONString(orderVo));
 
                 }else{
                     logger.info("止损 - 没有 多头 头寸无需止损, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
@@ -147,34 +172,7 @@ public class StrategyServiceImpl implements StrategyService {
 
 
 
-
-
-
-
-
-
-
-        //        // 根据当前信息判断是否有止损信号
-//
-//        // 如果止损并且持有仓位，进行平仓操作
-
-//        /***************************************************************** 准备基础数据 *********************************************************************/
-//        // 获取 startDate -> endDate 数据
-//        List<DailyVo> dailys = dataService.daily(tsCode, startDate, date);
-//
-//        /***************************************************************** 计算atr *********************************************************************/
-//        List<BigDecimal> dailyAtrs = calculateService.getDailyAtrs(tsCode, dailys, date, atrPeriod);
-//
-//
-//
-//
-//
-//
 //        // 获取滤镜，判断当前的开仓信号是否与长期趋势背离，如背离，终止交易
-//
-//        // 如开仓，根据atr计算 下注手数
-//
-//
 
 
 

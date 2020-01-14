@@ -1,11 +1,15 @@
 package com.trade.vo;
 
+import java.io.Serializable;
+
 /**
  * @Author georgy
  * @Date 2020-01-10 下午 3:12
  * @DESC TODO
  */
-public class DailyVo {
+public class DailyVo implements Serializable {
+
+    private static final long serialVersionUID = 76575456131234L;
 
     private String ts_code	    ;// 股票代码
     private String trade_date   ;// 交易日期

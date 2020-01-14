@@ -1,6 +1,5 @@
 package com.trade.service;
 
-import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 
 import java.math.BigDecimal;
@@ -12,7 +11,5 @@ import java.util.List;
  * @DESC TODO
  */
 public interface CalculateService {
-    List<BigDecimal> getDailyAtrs(String tsCode, List<DailyVo> dailys, String date, int atrPeriod);
-
-    OrderVo getOrder(List<OrderVo> tradeOrder, String tsCode);
+    BigDecimal getDailyAverageAtr(String tsCode, String date, int atrPeriod);
 }

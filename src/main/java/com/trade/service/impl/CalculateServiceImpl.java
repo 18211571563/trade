@@ -35,28 +35,20 @@ public class CalculateServiceImpl implements CalculateService {
     private DataService dataService;
 
 
-
-
     /**
-     * 获取数据的ATR集合
-     * @param dailys
+     * 获取今日 atr
+     * @param tsCode
+     * @param date
+     * @param atrPeriod
+     * @return
      */
     @Override
-    public List<BigDecimal> getDailyAtrs(String tsCode, List<DailyVo> dailys, String date, int atrPeriod) {
-        // 获取计算ATR所需的前置 atrPeriod 条数据
-        List<DailyVo> getCalculateAtrDailyVos = this.getCalculateAtrDailyVos(tsCode, date, atrPeriod);
-        // 合并集合
-        List<BigDecimal> dailyAtrs = new ArrayList();
-        List<DailyVo> datas = new ArrayList<>();
-        datas.addAll(getCalculateAtrDailyVos);
-        datas.addAll(dailys);
-
-        for(int day = 0; day < dailys.size(); day++ ){
-            // 第N个交易日 atr, 0开始
-            BigDecimal dailyAtr = CapitalUtil.getDailyAtr(datas, day, atrPeriod);
-            dailyAtrs.add(dailyAtr);
-        }
-        return dailyAtrs;
+    public BigDecimal getDailyAverageAtr(String tsCode, String date, int atrPeriod) {
+        // 获取计算ATR所需的前置 atrPeriod 天数据
+        List<DailyVo> getCalculateAtrDailyVos = this.getCalculateAtrDailyVos(tsCode, date, atrPeriod); // 有 atrPeriod  + 1 条数据
+        // 计算今日 ATR
+        BigDecimal dailyAtr = CapitalUtil.getDailyAtr(getCalculateAtrDailyVos);
+        return dailyAtr;
     }
 
     /**
@@ -67,24 +59,10 @@ public class CalculateServiceImpl implements CalculateService {
      */
     private List<DailyVo> getCalculateAtrDailyVos(String tsCode, String startDate, int atrPeriod) {
         // 获取前 atrPeriod 天的数据，用来计算atr
-        LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(atrPeriod * 2, ChronoUnit.DAYS );
-        LocalDate endDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
+        LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(atrPeriod , ChronoUnit.DAYS  );
+        LocalDate endDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER);
         return dataService.daily(tsCode, startDateL.format(TimeUtil.SHORT_DATE_FORMATTER), endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
     }
-
-    @Override
-    public OrderVo getOrder(List<OrderVo> tradeOrder, String tsCode) {
-        if(!CollectionUtils.isEmpty(tradeOrder)){
-            for (OrderVo orderVo : tradeOrder) {
-                if(orderVo.getTsCode().equals(tsCode)){
-                    return orderVo;
-                }
-            }
-        }
-        return null;
-    }
-
-
 
 
 
