@@ -12,4 +12,6 @@ import java.util.List;
  */
 public interface CalculateService {
     BigDecimal getDailyAverageAtr(String tsCode, String date, int atrPeriod);
+
+    BigDecimal getFilterTrend(String tsCode, String startDate, int day);
 }

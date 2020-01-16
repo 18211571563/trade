@@ -114,8 +114,17 @@ public class CapitalUtil {
             trList.add(BigDecimal.valueOf(tr));
         }
 
-        double average = trList.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble();
+        double average = CapitalUtil.average(trList);
         return BigDecimal.valueOf(average);
+    }
+
+    /**
+     * 计算均值
+     * @param trList
+     * @return
+     */
+    public static double average(List<BigDecimal> trList) {
+        return trList.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble();
     }
 
 }

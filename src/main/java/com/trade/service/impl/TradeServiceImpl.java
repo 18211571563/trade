@@ -2,6 +2,8 @@ package com.trade.service.impl;
 
 import com.trade.service.TradeService;
 import com.trade.vo.OrderVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -16,9 +18,14 @@ import java.util.List;
 @Service
 public class TradeServiceImpl implements TradeService {
 
+    Logger logger = LoggerFactory.getLogger(getClass());
+
+
     @Override
     public void open(OrderVo orderVo) {
         tradeOrders.add(orderVo);
+        // 冻结金额
+        this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
     }
 
     @Override
@@ -36,6 +43,7 @@ public class TradeServiceImpl implements TradeService {
             throw new RuntimeException("数据错误: 交易订单没有方向");
         }
         this.calTotalCapital(bp);
+        this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate());
     }
 
     /**
@@ -72,6 +80,16 @@ public class TradeServiceImpl implements TradeService {
     public void calTotalCapital(BigDecimal bp){
         TradeService.assetVo.setTotalCapital(TradeService.assetVo.getTotalCapital().add(bp));
     }
+
+    /**
+     * 冻结金额操作 - 正数冻结，负数释放
+     */
+    public void doFrozenCapital(BigDecimal capital){
+        logger.info("冻结金额:{}" , capital.doubleValue());
+        TradeService.assetVo.setFrozenCapital(TradeService.assetVo.getFrozenCapital().add(capital));
+    }
+
+
 
     /**
      * 获取风险系数

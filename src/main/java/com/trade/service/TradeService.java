@@ -19,6 +19,7 @@ public interface TradeService {
     public static int atrPeriod = 30;
     public static int breakOpenDay = 50;
     public static int breakCloseDay = 25;
+    public static int filterDay = 200;
 
     void open(OrderVo orderVo);
     void close(OrderVo orderVo, BigDecimal closePrice);

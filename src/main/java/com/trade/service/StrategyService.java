@@ -6,7 +6,9 @@ package com.trade.service;
  * @DESC TODO
  */
 public interface StrategyService {
-    void process();
+    void process() throws InterruptedException;
 
-    void process(String tsCode,String date);
+    void process(String tsCode);
+
+    void process(String tsCode, String date);
 }

@@ -82,7 +82,7 @@ public class DataServiceImpl implements DataService {
     public List<DailyVo> daily(String ts_code, String start_date, String end_date){
         // 由于每分钟最多调用60次，所以控制一下
         try {
-            Thread.sleep(800);
+            Thread.sleep(1500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
