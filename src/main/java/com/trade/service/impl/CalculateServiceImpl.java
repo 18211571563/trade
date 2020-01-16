@@ -2,6 +2,7 @@ package com.trade.service.impl;
 
 import com.trade.service.CalculateService;
 import com.trade.service.DataService;
+import com.trade.service.TradeService;
 import com.trade.utils.CapitalUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
@@ -115,7 +116,7 @@ public class CalculateServiceImpl implements CalculateService {
         BigDecimal b = end.subtract(begin).divide(begin,8, BigDecimal.ROUND_HALF_UP); // (e-b)/b
         BigDecimal eb = b.divide(BigDecimal.valueOf(closes.size()),  8, BigDecimal.ROUND_HALF_UP);
 
-        return eb;
+        return eb.add(TradeService.marketTrendOffset);
     }
 
 

@@ -41,7 +41,7 @@ public class StrategyServiceImpl implements StrategyService {
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
-    Logger asset = LoggerFactory.getLogger("asset");
+    Logger assetLogger = LoggerFactory.getLogger("asset");
 
     @Autowired
     private DataService dataService;
@@ -87,7 +87,7 @@ public class StrategyServiceImpl implements StrategyService {
                 logger.warn("非交易日:{}", date);
             }
         }
-        asset.info(JSON.toJSONString(TradeService.assetVo));
+        assetLogger.info(JSON.toJSONString(TradeService.assetVo));
     }
 
     @Override
@@ -104,9 +104,9 @@ public class StrategyServiceImpl implements StrategyService {
         DailyVo minOpen = CapitalUtil.getMin(breakOpenDailyVo);
 
         if(orderVo == null){
-            BigDecimal filterTrend = calculateService.getFilterTrend(tsCode, date, TradeService.filterDay).add(BigDecimal.valueOf(1));
+            BigDecimal filterTrend = calculateService.getFilterTrend(tsCode, date, TradeService.filterDay);
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxOpen.getClose())) > 0){
-                if(filterTrend.compareTo(BigDecimal.ZERO) > 0){
+                if(filterTrend.compareTo(BigDecimal.ZERO) >= 0){
                     // 计算交易量
                     BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, TradeService.atrPeriod); // 获取今日 ATR
                     int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, unit);
@@ -127,7 +127,7 @@ public class StrategyServiceImpl implements StrategyService {
                 }
 
             }else if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minOpen.getClose())) < 0){
-                if(filterTrend.compareTo(BigDecimal.ZERO) < 0){
+                if(filterTrend.compareTo(BigDecimal.ZERO) <= 0){
                     // 计算交易量
                     BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, TradeService.atrPeriod); // 获取今日 ATR
                     int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, unit);

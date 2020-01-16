@@ -19,10 +19,16 @@ import java.util.List;
 public class TradeServiceImpl implements TradeService {
 
     Logger logger = LoggerFactory.getLogger(getClass());
-
+    Logger tradeLogger = LoggerFactory.getLogger("trade");
 
     @Override
     public void open(OrderVo orderVo) {
+        // 判断现在的可用资金是否满足 订单金额
+        if(TradeService.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
+            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", TradeService.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+        }
+
+        // 开仓
         tradeOrders.add(orderVo);
         // 冻结金额
         this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
