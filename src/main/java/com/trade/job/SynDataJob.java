@@ -4,6 +4,8 @@ import com.trade.service.DataService;
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,6 +21,8 @@ import java.util.List;
  */
 @Component
 public class SynDataJob {
+
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     @Autowired
     @Qualifier("dataServiceImpl")
@@ -39,9 +43,11 @@ public class SynDataJob {
 
     public void dailyOnlySym(String start_date, String end_date){
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
+        int index = 0;
         stockBasicVos.forEach(stockBasicVo -> {
             List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
             mongoTemplate.insert(dailys, "daily");
+            logger.info("第{}条, 编码:{}", index, stockBasicVo.getTs_code());
         });
     }
 
