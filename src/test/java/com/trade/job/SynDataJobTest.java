@@ -1,8 +1,12 @@
 package com.trade.job;
 
 import com.BaseTest;
+import com.trade.utils.TimeUtil;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.Assert.*;
 
@@ -16,12 +20,12 @@ public class SynDataJobTest extends BaseTest {
      */
     @Test
     public void tradeCalSym() {
-        synDataJob.tradeCalSym("20100101", "20200117");
+        synDataJob.tradeCalSym("20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
     }
 
     @Test
     public void dailyOnlySym() {
-        synDataJob.dailyOnlySym("20100101", "20200117");
+        synDataJob.dailyOnlySym("20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
     }
 
     /**

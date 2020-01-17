@@ -37,7 +37,7 @@ public class StrategyServiceImpl implements StrategyService {
     private static String[] tsCodes = {"000100.SZ"};
     private static int unit = 100;
     private static String startDate = "20190101";
-    private static String endDate = "20200101";
+    private static String endDate = LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER);
     private static Map<String, String>  assetMap; // 资产
 
     Logger logger = LoggerFactory.getLogger(getClass());
