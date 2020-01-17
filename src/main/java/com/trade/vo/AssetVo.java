@@ -17,6 +17,7 @@ public class AssetVo {
         super();
         this.totalCapital = totalCapital;
         this.riskParameter = riskParameter;
+        this.usableCapital = totalCapital;
     }
 
     public AssetVo(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal frozenCapital){

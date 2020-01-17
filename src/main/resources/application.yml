@@ -13,7 +13,9 @@ spring:
         max-active: 2000
         max-wait: 1000
 
-
+  data:
+    mongodb:
+      uri: mongodb://10.73.129.235:27017/trade
 
 
 server:
@@ -35,8 +37,9 @@ http:
 message:
   url: http://10.73.129.226:3000
   service:
-    daily: /daily/<ts_code>/<start_date>/<end_date>
+    daily: /pro_bar/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
+    stock_basic: /stock_basic
 
 ##日志文件配置
 logging:

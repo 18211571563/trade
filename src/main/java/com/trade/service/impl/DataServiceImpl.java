@@ -5,6 +5,7 @@ import com.alibaba.fastjson.TypeReference;
 import com.trade.service.DataService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
+import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,21 @@ public class DataServiceImpl implements DataService {
     private String DAILY;
     @Value("${message.service.trade_cal}")
     private String TRADE_CAL;
+    @Value("${message.service.stock_basic}")
+    private String STOCK_BASIC;
+
+    /**
+     * 股票列表
+     * @return
+     */
+    @Override
+    @Cacheable(key = "'stock_basic'")
+    public List<StockBasicVo> stock_basic(){
+        String url = BASE_URL + STOCK_BASIC;
+        String response = restTemplate.getForObject(url, String.class);
+        List<StockBasicVo> data = JSON.parseObject(response, new TypeReference<List<StockBasicVo>>(){});
+        return data;
+    }
 
     /**
      * 交易日历
@@ -82,7 +98,7 @@ public class DataServiceImpl implements DataService {
     public List<DailyVo> daily(String ts_code, String start_date, String end_date){
         // 由于每分钟最多调用60次，所以控制一下
         try {
-            Thread.sleep(500);
+            Thread.sleep(600);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

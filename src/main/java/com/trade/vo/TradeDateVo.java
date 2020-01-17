@@ -1,11 +1,15 @@
 package com.trade.vo;
 
+import java.io.Serializable;
+
 /**
  * @Author georgy
  * @Date 2020-01-13 下午 2:23
  * @DESC TODO
  */
-public class TradeDateVo {
+public class TradeDateVo implements Serializable {
+
+    private static final long serialVersionUID = 24375451280286L;
 
     private String exchange;
     private String calDate;

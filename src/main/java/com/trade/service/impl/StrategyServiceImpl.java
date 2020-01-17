@@ -12,6 +12,7 @@ import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,10 +34,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class StrategyServiceImpl implements StrategyService {
 
-    private static String[] tsCodes = {"000100.SZ", "000001.SZ", "601788.SH"};
+    private static String[] tsCodes = {"000100.SZ"};
     private static int unit = 100;
     private static String startDate = "20190101";
-    private static String endDate = "20200115";
+    private static String endDate = "20200101";
     private static Map<String, String>  assetMap; // 资产
 
     Logger logger = LoggerFactory.getLogger(getClass());
