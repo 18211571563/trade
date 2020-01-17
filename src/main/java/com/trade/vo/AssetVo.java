@@ -12,22 +12,20 @@ import java.math.BigDecimal;
  */
 public class AssetVo {
 
+    private static AssetVo assetVo;
+
     public AssetVo(){super();}
+
     public AssetVo(BigDecimal totalCapital, BigDecimal riskParameter){
         super();
         this.totalCapital = totalCapital;
         this.riskParameter = riskParameter;
         this.usableCapital = totalCapital;
     }
-
-    public AssetVo(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal frozenCapital){
-        super();
-        this.totalCapital = totalCapital;
-        this.riskParameter = riskParameter;
-        this.frozenCapital = frozenCapital;
-
-        this.usableCapital = this.totalCapital.subtract(this.frozenCapital);
+    public synchronized static AssetVo create(BigDecimal totalCapital, BigDecimal riskParameter){
+        return assetVo = new AssetVo(totalCapital, riskParameter);
     }
+
 
     private BigDecimal totalCapital = BigDecimal.ZERO; // 总资金
     private BigDecimal usableCapital = BigDecimal.ZERO; // 可用资金
@@ -38,7 +36,7 @@ public class AssetVo {
         return totalCapital;
     }
 
-    public void setTotalCapital(BigDecimal totalCapital) {
+    public synchronized void setTotalCapital(BigDecimal totalCapital) {
         this.totalCapital = totalCapital;
         this.usableCapital = this.totalCapital.subtract(this.frozenCapital);
     }
@@ -55,7 +53,7 @@ public class AssetVo {
         return frozenCapital;
     }
 
-    public void setFrozenCapital(BigDecimal frozenCapital) {
+    public synchronized void setFrozenCapital(BigDecimal frozenCapital) {
         this.frozenCapital = frozenCapital;
         this.usableCapital = this.totalCapital.subtract(this.frozenCapital);
     }
@@ -64,7 +62,7 @@ public class AssetVo {
         return riskParameter;
     }
 
-    public void setRiskParameter(BigDecimal riskParameter) {
+    public synchronized void setRiskParameter(BigDecimal riskParameter) {
         this.riskParameter = riskParameter;
     }
 }
