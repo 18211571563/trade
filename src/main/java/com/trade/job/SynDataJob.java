@@ -44,11 +44,11 @@ public class SynDataJob {
     public void dailyOnlySym(String start_date, String end_date){
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         int index = 0;
-        stockBasicVos.forEach(stockBasicVo -> {
+        for (StockBasicVo stockBasicVo : stockBasicVos) {
             List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
             mongoTemplate.insert(dailys, "daily");
-            logger.info("第{}条, 编码:{}", index, stockBasicVo.getTs_code());
-        });
+            logger.info("第{}条, 编码:{}", String.valueOf(++index), stockBasicVo.getTs_code());
+        }
     }
 
     public void stockBasicSym(){
