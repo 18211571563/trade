@@ -33,6 +33,7 @@ public class SynDataJob {
      */
     public void tradeCalSym(String start_date, String end_date){
         List<TradeDateVo> sse = dataService.tradeCal("SSE", start_date, end_date);
+        mongoTemplate.dropCollection("trade_cal");
         mongoTemplate.insert(sse, "trade_cal");
     }
 
