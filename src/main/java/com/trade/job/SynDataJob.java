@@ -42,13 +42,6 @@ public class SynDataJob {
         stockBasicVos.forEach(stockBasicVo -> {
             List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
             mongoTemplate.insert(dailys, "daily");
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
         });
     }
 
