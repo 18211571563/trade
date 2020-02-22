@@ -9,22 +9,20 @@ import com.trade.utils.CapitalUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
+import com.trade.vo.StockBasicVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Author georgy
@@ -34,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class StrategyServiceImpl implements StrategyService {
 
-    private static String[] tsCodes = {"000100.SZ"};
+    private static String[] tsCodes = {"000001.SZ"};
     private static int unit = 100;
     private static String startDate = "20190101";
     private static String endDate = LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER);
@@ -51,13 +49,22 @@ public class StrategyServiceImpl implements StrategyService {
     @Autowired
     private TradeService tradeService;
 
-
     @Override
     public void process() throws InterruptedException {
-        ExecutorService executor = Executors.newCachedThreadPool();
+
+        // 获取 选样池信息
+        List<StockBasicVo> stockBasicVos = dataService.stock_basic();
+        List<String> initTsCodes = new ArrayList<>();
+        stockBasicVos.forEach(stockBasicVo -> {
+            String ts_code = stockBasicVo.getTs_code();
+            initTsCodes.add(ts_code);
+        });
+        tsCodes = initTsCodes.toArray(new String[initTsCodes.size()]);
+
+        ExecutorService executor = Executors.newFixedThreadPool(20); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
             executor.execute(() -> {
-                logger.error(Thread.currentThread().getName());
+                MDC.put("tsCode", tsCode);
                 this.process(tsCode);
             });
         }

@@ -3,7 +3,7 @@ spring:
     name: trade
   redis:
     database: 1
-    host: 10.73.129.226
+    host: localhost
     port: 6379
     timeout: 2000
     jedis:
@@ -15,7 +15,8 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://10.73.129.235:27017/trade
+      uri: mongodb://localhost:27017/trade
+
 
 
 server:
@@ -35,7 +36,7 @@ http:
 
 # 服务地址
 message:
-  url: http://10.73.129.226:3000
+  url: http://localhost:3000
   service:
     daily: /pro_bar/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
