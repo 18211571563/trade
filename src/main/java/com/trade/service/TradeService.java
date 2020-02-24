@@ -16,11 +16,7 @@ public interface TradeService {
 
     public static List<OrderVo> tradeOrders = new ArrayList<>();
     public static AssetVo assetVo = AssetVo.create(BigDecimal.valueOf(1000000), BigDecimal.valueOf(50));
-    public static int atrPeriod = 30;
-    public static int breakOpenDay = 50;
-    public static int breakCloseDay = 25;
-    public static int filterDay = 200;
-    public static BigDecimal marketTrendOffset = BigDecimal.ONE; // 个人主观市场趋势偏移量
+
 
     void open(OrderVo orderVo, boolean isUsedCapitail);
     void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail);

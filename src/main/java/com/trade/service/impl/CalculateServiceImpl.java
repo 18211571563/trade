@@ -1,5 +1,6 @@
 package com.trade.service.impl;
 
+import com.trade.config.TradeConstantConfig;
 import com.trade.service.CalculateService;
 import com.trade.service.DataService;
 import com.trade.service.TradeService;
@@ -32,6 +33,8 @@ public class CalculateServiceImpl implements CalculateService {
 
     @Autowired
     private DataService dataService;
+    @Autowired
+    private TradeConstantConfig tradeConstantConfig;
 
 
     /**
@@ -116,7 +119,7 @@ public class CalculateServiceImpl implements CalculateService {
         BigDecimal b = end.subtract(begin).divide(begin,8, BigDecimal.ROUND_HALF_UP); // (e-b)/b
         BigDecimal eb = b.divide(BigDecimal.valueOf(closes.size()),  8, BigDecimal.ROUND_HALF_UP);
 
-        return eb.add(TradeService.marketTrendOffset);
+        return eb.add(BigDecimal.valueOf(tradeConstantConfig.getMarketTrendOffset()));  // 加上个人趋势偏移量
     }
 
 
