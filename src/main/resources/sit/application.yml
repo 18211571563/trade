@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: trade
+  redis:
+    database: 17
+    host: 10.73.128.184
+    port: 6379
+    timeout: 2000
+    jedis:
+      pool:
+        min-idle: 50
+        max-idle: 500
+        max-active: 2000
+        max-wait: 1000
+
+  data:
+    mongodb:
+      uri: mongodb://10.73.129.235:27017/trade
+
+
+
+server:
+  port: 3001
+
+
+# HttpClient配置
+http:
+  client:
+    connection:
+      maxTotal: 200
+      defaultMaxPerRoute: 20
+    request:
+      connectionRequestTimeout: 500
+      connectTimeout: 1000
+      socketTimeout: 600000
+
+# 服务地址
+message:
+  url: http://10.73.129.226:3000
+  service:
+    daily: /pro_bar/<ts_code>/<start_date>/<end_date>
+    trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
+    stock_basic: /stock_basic
+
+##日志文件配置
+logging:
+  config: classpath:logback.xml
