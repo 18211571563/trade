@@ -42,12 +42,20 @@ public class SynDataJob {
     }
 
     public void dailyOnlySym(String start_date, String end_date){
+        boolean skip = true;
+
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         int index = 0;
         for (StockBasicVo stockBasicVo : stockBasicVos) {
-            List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
-            mongoTemplate.insert(dailys, "daily");
-            logger.info("第{}条, 编码:{}", String.valueOf(++index), stockBasicVo.getTs_code());
+            if(!skip && stockBasicVo.getTs_code().equals("603719.SH")){
+                skip = true;
+                continue;
+            }
+            if(skip){
+                List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
+                mongoTemplate.insert(dailys, "daily");
+                logger.info("第{}条, 编码:{}", String.valueOf(++index), stockBasicVo.getTs_code());
+            }
         }
     }
 

@@ -32,14 +32,19 @@ import java.util.concurrent.Executors;
 @Service
 public class StrategyServiceImpl implements StrategyService {
 
-    private static String[] tsCodes = {"000001.SZ"};
+    private static String[] tsCodes = {"000710.SZ"};
+    private static Boolean all = true;
+    private static Boolean isUsedCapitail = false;
     private static int unit = 100;
+    private static String today = "20200117"; // 今日
     private static String startDate = "20190101";
-    private static String endDate = LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER);
+//    private static String endDate = LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER);
+    private static String endDate = "20200117";
     private static Map<String, String>  assetMap; // 资产
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
+    Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
     Logger assetLogger = LoggerFactory.getLogger("asset");
 
     @Autowired
@@ -53,13 +58,16 @@ public class StrategyServiceImpl implements StrategyService {
     public void process() throws InterruptedException {
 
         // 获取 选样池信息
-        List<StockBasicVo> stockBasicVos = dataService.stock_basic();
-        List<String> initTsCodes = new ArrayList<>();
-        stockBasicVos.forEach(stockBasicVo -> {
-            String ts_code = stockBasicVo.getTs_code();
-            initTsCodes.add(ts_code);
-        });
-        tsCodes = initTsCodes.toArray(new String[initTsCodes.size()]);
+        if(all){
+            List<StockBasicVo> stockBasicVos = dataService.stock_basic();
+            List<String> initTsCodes = new ArrayList<>();
+            stockBasicVos.forEach(stockBasicVo -> {
+                String ts_code = stockBasicVo.getTs_code();
+                initTsCodes.add(ts_code);
+            });
+            tsCodes = initTsCodes.toArray(new String[initTsCodes.size()]);
+        }
+
 
         ExecutorService executor = Executors.newFixedThreadPool(20); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
@@ -124,13 +132,24 @@ public class StrategyServiceImpl implements StrategyService {
                             new BigDecimal(daily.getClose()),
                             BigDecimal.valueOf(tradeVolume * unit),
                             LocalDateTime.now());
-                    tradeService.open(tradeOrderVo);
+                    tradeService.open(tradeOrderVo, isUsedCapitail);
+
                     tradeLogger.info("交易 - 开多:{}, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}" ,
                             tradeOrderVo.getTsCode(),
                             tradeOrderVo.getPrice(),
                             tradeOrderVo.getVolume(),
                             date ,
                             JSON.toJSONString(tradeOrderVo));
+
+                    if(date.equals(today)){ // 记录今天的交易日志
+                        todayTradeLogger.info("交易 - 开多:{}, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}" ,
+                                tradeOrderVo.getTsCode(),
+                                tradeOrderVo.getPrice(),
+                                tradeOrderVo.getVolume(),
+                                date ,
+                                JSON.toJSONString(tradeOrderVo));
+                    }
+
 
                 }
 
@@ -145,13 +164,22 @@ public class StrategyServiceImpl implements StrategyService {
                             new BigDecimal(daily.getClose()),
                             BigDecimal.valueOf(tradeVolume * unit),
                             LocalDateTime.now());
-                    tradeService.open(tradeOrderVo);
+                    tradeService.open(tradeOrderVo, isUsedCapitail);
                     tradeLogger.info("交易 - 开空:{}, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}" ,
                             tradeOrderVo.getTsCode(),
                             tradeOrderVo.getPrice(),
                             tradeOrderVo.getVolume(),
                             date ,
                             JSON.toJSONString(tradeOrderVo));
+
+                    if(date.equals(today)){ // 记录今天的交易日志
+                        todayTradeLogger.info("交易 - 开空:{}, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}" ,
+                                tradeOrderVo.getTsCode(),
+                                tradeOrderVo.getPrice(),
+                                tradeOrderVo.getVolume(),
+                                date ,
+                                JSON.toJSONString(tradeOrderVo));
+                    }
                 }
 
             }else{
@@ -173,16 +201,29 @@ public class StrategyServiceImpl implements StrategyService {
             // 判断是否持有空头头寸
             if(orderVo != null){
                 if(orderVo.getDirection() == 0){
-                    tradeService.close(orderVo, new BigDecimal(daily.getClose()));
+                    tradeService.close(orderVo, new BigDecimal(daily.getClose()), isUsedCapitail);
 
-                    tradeLogger.info("止损 - 平空:{}, 损益:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}" ,
+                    tradeLogger.info("止损 - 平空:{}, 损益:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}" ,
                             orderVo.getTsCode(),
                             orderVo.getPrice().subtract(new BigDecimal(daily.getClose())).multiply(orderVo.getVolume()),
+                            orderVo.getPrice().subtract(new BigDecimal(daily.getClose())).divide(orderVo.getPrice(), 2, BigDecimal.ROUND_HALF_UP ).doubleValue(),
                             date ,
                             orderVo.getPrice(),
                             daily.getClose(),
                             orderVo.getVolume(),
                             JSON.toJSONString(orderVo));
+
+                    if(date.equals(today)){ // 记录今天的交易日志
+                        todayTradeLogger.info("止损 - 平空:{}, 损益:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}" ,
+                                orderVo.getTsCode(),
+                                orderVo.getPrice().subtract(new BigDecimal(daily.getClose())).multiply(orderVo.getVolume()),
+                                orderVo.getPrice().subtract(new BigDecimal(daily.getClose())).divide(orderVo.getPrice(), 2, BigDecimal.ROUND_HALF_UP ).doubleValue(),
+                                date ,
+                                orderVo.getPrice(),
+                                daily.getClose(),
+                                orderVo.getVolume(),
+                                JSON.toJSONString(orderVo));
+                    }
 
                 }else{
                     logger.info("止损 - 没有 空头 头寸无需止损, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));
@@ -195,15 +236,28 @@ public class StrategyServiceImpl implements StrategyService {
             // 判断是否持有多头头寸
             if(orderVo != null){
                 if(orderVo.getDirection() == 1){
-                    tradeService.close(orderVo, new BigDecimal(daily.getClose()));
-                    tradeLogger.info("止损 - 平多:{}, 损益:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}" ,
+                    tradeService.close(orderVo, new BigDecimal(daily.getClose()), isUsedCapitail);
+                    tradeLogger.info("止损 - 平多:{}, 损益:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}" ,
                             orderVo.getTsCode(),
                             new BigDecimal(daily.getClose()).subtract(orderVo.getPrice()).multiply(orderVo.getVolume()),
+                            new BigDecimal(daily.getClose()).subtract(orderVo.getPrice()).divide(orderVo.getPrice(), 2, BigDecimal.ROUND_HALF_UP ).doubleValue(),
                             date ,
                             orderVo.getPrice(),
                             daily.getClose(),
                             orderVo.getVolume(),
                             JSON.toJSONString(orderVo));
+
+                    if(date.equals(today)){ // 记录今天的交易日志
+                        todayTradeLogger.info("止损 - 平多:{}, 损益:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}" ,
+                                orderVo.getTsCode(),
+                                new BigDecimal(daily.getClose()).subtract(orderVo.getPrice()).multiply(orderVo.getVolume()),
+                                new BigDecimal(daily.getClose()).subtract(orderVo.getPrice()).divide(orderVo.getPrice(), 2, BigDecimal.ROUND_HALF_UP ).doubleValue(),
+                                date ,
+                                orderVo.getPrice(),
+                                daily.getClose(),
+                                orderVo.getVolume(),
+                                JSON.toJSONString(orderVo));
+                    }
 
                 }else{
                     logger.info("止损 - 没有 多头 头寸无需止损, 交易日:{}, 数据:{}",date , JSON.toJSONString(daily));

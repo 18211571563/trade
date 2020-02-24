@@ -22,9 +22,9 @@ public class TradeServiceImpl implements TradeService {
     Logger tradeLogger = LoggerFactory.getLogger("trade");
 
     @Override
-    public synchronized void open(OrderVo orderVo) {
+    public synchronized void open(OrderVo orderVo, boolean isUsedCapitail) {
         // 判断现在的可用资金是否满足 订单金额
-        if(TradeService.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
+        if(isUsedCapitail && TradeService.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
             tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", TradeService.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
             return;
         }
@@ -32,25 +32,28 @@ public class TradeServiceImpl implements TradeService {
         // 开仓 - 保存订单
         tradeOrders.add(orderVo);
         // 冻结金额
-        this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
+        if(isUsedCapitail) this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
     }
 
     @Override
-    public synchronized void close(OrderVo orderVo, BigDecimal closePrice) {
+    public synchronized void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail) {
         tradeOrders.remove(orderVo);
-        BigDecimal bp = BigDecimal.ZERO;
-        // 计算交易损益(BP)
-        if(orderVo.getDirection() == 1){ // 多头头寸平仓计算 BP
-            bp = closePrice.subtract(orderVo.getPrice()).multiply(orderVo.getVolume());
+        if(isUsedCapitail){
+            BigDecimal bp = BigDecimal.ZERO;
+            // 计算交易损益(BP)
+            if(orderVo.getDirection() == 1){ // 多头头寸平仓计算 BP
+                bp = closePrice.subtract(orderVo.getPrice()).multiply(orderVo.getVolume());
 
-        }else if(orderVo.getDirection() == 0){ // 空头头寸平仓计算 BP
-            bp = orderVo.getPrice().subtract(closePrice).multiply(orderVo.getVolume());
+            }else if(orderVo.getDirection() == 0){ // 空头头寸平仓计算 BP
+                bp = orderVo.getPrice().subtract(closePrice).multiply(orderVo.getVolume());
 
-        }else{
-            throw new RuntimeException("数据错误: 交易订单没有方向");
+            }else{
+                throw new RuntimeException("数据错误: 交易订单没有方向");
+            }
+            this.calTotalCapital(bp); // 释放总资金
+            this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate()); // 释放锁定资金
         }
-        this.calTotalCapital(bp); // 释放总资金
-        this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate()); // 释放锁定资金
+
     }
 
     /**

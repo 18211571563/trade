@@ -22,8 +22,8 @@ public interface TradeService {
     public static int filterDay = 200;
     public static BigDecimal marketTrendOffset = BigDecimal.ONE; // 个人主观市场趋势偏移量
 
-    void open(OrderVo orderVo);
-    void close(OrderVo orderVo, BigDecimal closePrice);
+    void open(OrderVo orderVo, boolean isUsedCapitail);
+    void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail);
     OrderVo getOrderVo(String tsCode);
 
     BigDecimal getTotalCapital();
