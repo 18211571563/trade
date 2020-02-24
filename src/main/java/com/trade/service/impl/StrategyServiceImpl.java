@@ -1,6 +1,7 @@
 package com.trade.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.CalculateService;
 import com.trade.service.DataService;
@@ -8,6 +9,7 @@ import com.trade.service.StrategyService;
 import com.trade.service.TradeService;
 import com.trade.utils.CapitalUtil;
 import com.trade.utils.TimeUtil;
+import com.trade.vo.AssetVo;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import com.trade.vo.StockBasicVo;
@@ -59,8 +61,17 @@ public class StrategyServiceImpl implements StrategyService {
     private CalculateService calculateService;
     @Autowired
     private TradeService tradeService;
+    @Autowired
+    private CapitalManager capitalManager;
 
+    /**
+     * 初始化启动项
+     */
     private void init(){
+        /** 初始化资金管理 **/
+        capitalManager.init();
+
+        /** 初始化参数 **/
         this.tsCodes = tradeConstantConfig.getTsCodes();
         this.all = tradeConstantConfig.getUsedAll();
         this.isUsedCapitail = tradeConstantConfig.getUsedCapitail();
@@ -73,6 +84,7 @@ public class StrategyServiceImpl implements StrategyService {
         this.breakOpenDay = tradeConstantConfig.getBreakOpenDay();
         this.breakCloseDay = tradeConstantConfig.getBreakCloseDay();
         this.filterDay = tradeConstantConfig.getFilterDay();
+
     }
 
     @Override
@@ -127,11 +139,12 @@ public class StrategyServiceImpl implements StrategyService {
                 logger.warn("非交易日:{}", date);
             }
         }
-        assetLogger.info(JSON.toJSONString(TradeService.assetVo));
+        assetLogger.info(JSON.toJSONString(CapitalManager.assetVo));
     }
 
     @Override
     public void process(String tsCode, String date){
+
         // 获取今日行情
         DailyVo daily = dataService.daily(tsCode, date, date).get(0);
         // 获取仓位信息

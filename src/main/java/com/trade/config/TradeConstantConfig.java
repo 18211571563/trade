@@ -60,7 +60,15 @@ public class TradeConstantConfig {
     @Value("${trade.constant.marketTrendOffset}")
     private int marketTrendOffset;
 
-    
+    /** 总资金 **/
+    @Value("${trade.constant.totalCapital}")
+    private int totalCapital;
+
+    /** 风险系数 **/
+    @Value("${trade.constant.riskParameter}")
+    private int riskParameter;
+
+
     public String[] getTsCodes() {
         return tsCodes;
     }
@@ -157,5 +165,19 @@ public class TradeConstantConfig {
         this.marketTrendOffset = marketTrendOffset;
     }
 
+    public int getTotalCapital() {
+        return totalCapital;
+    }
 
+    public void setTotalCapital(int totalCapital) {
+        this.totalCapital = totalCapital;
+    }
+
+    public int getRiskParameter() {
+        return riskParameter;
+    }
+
+    public void setRiskParameter(int riskParameter) {
+        this.riskParameter = riskParameter;
+    }
 }

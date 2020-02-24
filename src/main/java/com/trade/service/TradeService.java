@@ -14,10 +14,6 @@ import java.util.List;
  */
 public interface TradeService {
 
-    public static List<OrderVo> tradeOrders = new ArrayList<>();
-    public static AssetVo assetVo = AssetVo.create(BigDecimal.valueOf(1000000), BigDecimal.valueOf(50));
-
-
     void open(OrderVo orderVo, boolean isUsedCapitail);
     void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail);
     OrderVo getOrderVo(String tsCode);

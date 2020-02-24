@@ -13,6 +13,8 @@ trade:
     breakCloseDay: 25
     filterDay: 200
     marketTrendOffset: 1
+    totalCapital: 1000000
+    riskParameter: 1
 
 
 spring:

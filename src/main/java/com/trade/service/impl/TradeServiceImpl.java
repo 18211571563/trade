@@ -1,5 +1,6 @@
 package com.trade.service.impl;
 
+import com.trade.capital.CapitalManager;
 import com.trade.service.TradeService;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
@@ -24,20 +25,20 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public synchronized void open(OrderVo orderVo, boolean isUsedCapitail) {
         // 判断现在的可用资金是否满足 订单金额
-        if(isUsedCapitail && TradeService.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
-            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", TradeService.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+        if(isUsedCapitail && CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
+            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
             return;
         }
 
         // 开仓 - 保存订单
-        tradeOrders.add(orderVo);
+        CapitalManager.tradeOrders.add(orderVo);
         // 冻结金额
         if(isUsedCapitail) this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
     }
 
     @Override
     public synchronized void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail) {
-        tradeOrders.remove(orderVo);
+        CapitalManager.tradeOrders.remove(orderVo);
         if(isUsedCapitail){
             BigDecimal bp = BigDecimal.ZERO;
             // 计算交易损益(BP)
@@ -63,8 +64,8 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public synchronized OrderVo getOrderVo(String tsCode){
-        if(!CollectionUtils.isEmpty(tradeOrders)){
-            for (OrderVo orderVo : tradeOrders) {
+        if(!CollectionUtils.isEmpty(CapitalManager.tradeOrders)){
+            for (OrderVo orderVo : CapitalManager.tradeOrders) {
                 if(orderVo.getTsCode().equals(tsCode)){
                     return orderVo;
                 }
@@ -79,7 +80,7 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public BigDecimal getTotalCapital(){
-        return TradeService.assetVo.getTotalCapital();
+        return CapitalManager.assetVo.getTotalCapital();
     }
 
     /**
@@ -88,7 +89,7 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public synchronized void calTotalCapital(BigDecimal bp){
-        TradeService.assetVo.setTotalCapital(TradeService.assetVo.getTotalCapital().add(bp));
+        CapitalManager.assetVo.setTotalCapital(CapitalManager.assetVo.getTotalCapital().add(bp));
     }
 
     /**
@@ -96,7 +97,7 @@ public class TradeServiceImpl implements TradeService {
      */
     public synchronized void doFrozenCapital(BigDecimal capital){
         logger.info("冻结金额:{}" , capital.doubleValue());
-        TradeService.assetVo.setFrozenCapital(TradeService.assetVo.getFrozenCapital().add(capital));
+        CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
 
     }
 
@@ -108,7 +109,7 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public BigDecimal getRiskParameter(){
-        return TradeService.assetVo.getRiskParameter();
+        return CapitalManager.assetVo.getRiskParameter();
     }
 
     /**
@@ -117,7 +118,7 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public List<OrderVo> getTradeOrders(){
-        return TradeService.tradeOrders;
+        return CapitalManager.tradeOrders;
     }
 
 
