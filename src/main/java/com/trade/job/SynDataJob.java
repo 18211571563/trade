@@ -1,6 +1,7 @@
 package com.trade.job;
 
 import com.trade.service.DataService;
+import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
@@ -32,11 +35,9 @@ public class SynDataJob {
 
     /**
      * 同步交易日历
-     * @param start_date
-     * @param end_date
      */
-    public void tradeCalSym(String start_date, String end_date){
-        List<TradeDateVo> sse = dataService.tradeCal("SSE", start_date, end_date);
+    public void tradeCalSym(){
+        List<TradeDateVo> sse = dataService.tradeCal("SSE", "20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
         mongoTemplate.dropCollection("trade_cal");
         mongoTemplate.insert(sse, "trade_cal");
     }

@@ -20,12 +20,12 @@ public class SynDataJobTest extends BaseTest {
      */
     @Test
     public void tradeCalSym() {
-        synDataJob.tradeCalSym("20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
+        synDataJob.tradeCalSym();
     }
 
     @Test
     public void dailyOnlySym() {
-        synDataJob.dailyOnlySym("20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
+        synDataJob.dailyOnlySym("20200224", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
     }
 
     /**

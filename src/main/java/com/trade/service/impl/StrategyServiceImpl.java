@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -36,6 +37,10 @@ public class StrategyServiceImpl implements StrategyService {
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
+
+    /** 线程数量 **/
+    @Value("${trade.constant.threadCount}")
+    private int threadCount;
 
     private String[] tsCodes;
     private Boolean all;
@@ -105,7 +110,7 @@ public class StrategyServiceImpl implements StrategyService {
         }
 
 
-        ExecutorService executor = Executors.newFixedThreadPool(20); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
             executor.execute(() -> {
                 MDC.put("tsCode", tsCode);
