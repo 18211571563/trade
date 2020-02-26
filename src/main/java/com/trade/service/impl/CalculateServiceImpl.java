@@ -75,14 +75,15 @@ public class CalculateServiceImpl implements CalculateService {
     @Override
     public BigDecimal getFilterTrend(String tsCode, String startDate, int day) {
         // 获取最近200天数据
-        LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(day - 1  , ChronoUnit.DAYS  );
-        LocalDate endDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER);
-        List<DailyVo> dailys = dataService.daily(tsCode, startDateL.format(TimeUtil.SHORT_DATE_FORMATTER), endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
-
-        // 获取价格 时间序列 数据
-        List<BigDecimal> closes = new ArrayList<>();
-        dailys.forEach(dailyVo -> {closes.add(new BigDecimal(dailyVo.getClose()));});
-        return this.trend(closes);
+//        LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(day - 1  , ChronoUnit.DAYS  );
+//        LocalDate endDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER);
+//        List<DailyVo> dailys = dataService.daily(tsCode, startDateL.format(TimeUtil.SHORT_DATE_FORMATTER), endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
+//
+//        // 获取价格 时间序列 数据
+//        List<BigDecimal> closes = new ArrayList<>();
+//        dailys.forEach(dailyVo -> {closes.add(new BigDecimal(dailyVo.getClose()));});
+//        return this.trend(closes);
+        return BigDecimal.ONE;
     }
 
     /**
