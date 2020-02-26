@@ -92,6 +92,10 @@ public class StrategyServiceImpl implements StrategyService {
 
     }
 
+    /**
+     * 启动多线程执行任务
+     * @throws InterruptedException
+     */
     @Override
     public void process() throws InterruptedException {
 
@@ -128,6 +132,10 @@ public class StrategyServiceImpl implements StrategyService {
         }
     }
 
+    /**
+     * 执行具体的标的任务
+     * @param tsCode
+     */
     @Override
     public void process(String tsCode){
         /***************************************************************** for *********************************************************************/
@@ -162,9 +170,12 @@ public class StrategyServiceImpl implements StrategyService {
         DailyVo minOpen = CapitalUtil.getMin(breakOpenDailyVo);
 
         if(orderVo == null){
+            // 获取过滤线趋势
             BigDecimal filterTrend = calculateService.getFilterTrend(tsCode, date, filterDay);
+            if(filterTrend.compareTo(BigDecimal.ZERO) == 0) tradeLogger.info("过滤线无方向(0),不进行开仓!");
+
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxOpen.getClose())) > 0){
-                if(filterTrend.compareTo(BigDecimal.ZERO) >= 0){
+                if(filterTrend.compareTo(BigDecimal.ZERO) > 0){
                     // 计算交易量
                     BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, atrPeriod); // 获取今日 ATR
                     int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, unit);
@@ -196,7 +207,7 @@ public class StrategyServiceImpl implements StrategyService {
                 }
 
             }else if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minOpen.getClose())) < 0){
-                if(filterTrend.compareTo(BigDecimal.ZERO) <= 0){
+                if(filterTrend.compareTo(BigDecimal.ZERO) < 0){
                     // 计算交易量
                     BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, atrPeriod); // 获取今日 ATR
                     int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, unit);
