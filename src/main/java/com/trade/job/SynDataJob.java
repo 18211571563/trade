@@ -42,13 +42,12 @@ public class SynDataJob {
         mongoTemplate.insert(sse, "trade_cal");
     }
 
-    public void dailyOnlySym(String start_date, String end_date){
-        boolean skip = true;
+    public void dailyOnlySym(String start_date, String end_date, boolean skip){
 
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         int index = 0;
         for (StockBasicVo stockBasicVo : stockBasicVos) {
-            if(!skip && stockBasicVo.getTs_code().equals("603719.SH")){
+            if(!skip && stockBasicVo.getTs_code().equals("688396.SH")){
                 skip = true;
                 continue;
             }

@@ -16,6 +16,16 @@ public class SynDataJobTest extends BaseTest {
     private SynDataJob synDataJob;
 
     /**
+     * 同步数据
+     */
+    @Test
+    public void dailyOnlySym() {
+        synDataJob.dailyOnlySym("20200227",
+                LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER),
+                true);
+    }
+
+    /**
      * 同步日历
      */
     @Test
@@ -23,10 +33,6 @@ public class SynDataJobTest extends BaseTest {
         synDataJob.tradeCalSym();
     }
 
-    @Test
-    public void dailyOnlySym() {
-        synDataJob.dailyOnlySym("20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
-    }
 
     /**
      * 同步基础数据
