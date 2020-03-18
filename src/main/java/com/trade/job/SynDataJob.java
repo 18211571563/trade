@@ -42,16 +42,16 @@ public class SynDataJob {
         mongoTemplate.insert(sse, "trade_cal");
     }
 
-    public void dailyOnlySym(String start_date, String end_date, boolean skip){
+    public void dailyOnlySym(String start_date, String end_date, boolean skip, String tsCode){
 
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         int index = 0;
         for (StockBasicVo stockBasicVo : stockBasicVos) {
-            if(!skip && stockBasicVo.getTs_code().equals("688396.SH")){
-                skip = true;
+            if(skip && stockBasicVo.getTs_code().equals(tsCode)){
+                skip = false;
                 continue;
             }
-            if(skip){
+            if(!skip){
                 List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
                 mongoTemplate.insert(dailys, "daily");
                 logger.info("第{}条, 编码:{}", String.valueOf(++index), stockBasicVo.getTs_code());

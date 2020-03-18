@@ -22,7 +22,7 @@ public class SynDataJobTest extends BaseTest {
     public void dailyOnlySym() {
         synDataJob.dailyOnlySym("20200227",
                 LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER),
-                true);
+                false, "");
     }
 
     /**

@@ -2,8 +2,8 @@ spring:
   application:
     name: trade
   redis:
-    database: 17
-    host: 10.73.128.184
+    database: 1
+    host: localhost
     port: 6379
     timeout: 2000
     jedis:
@@ -36,7 +36,7 @@ http:
 
 # 服务地址
 message:
-  url: http://10.73.129.226:3000
+  url: http://localhost:3000
   service:
     daily: /pro_bar/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
