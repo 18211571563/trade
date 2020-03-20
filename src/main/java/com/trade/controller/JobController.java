@@ -15,6 +15,12 @@ public class JobController {
     @Autowired
     private SynDataJob synDataJob;
 
+    @GetMapping(value = "/d/{date}")
+    public String dailyOnlySym(@PathVariable String date) {
+        synDataJob.dailyOnlySym(date, date, false,"");
+        return "success";
+    }
+
     @GetMapping(value = "/d/{startDate}/{endDate}/{skip}/{tsCode}")
     public String dailyOnlySym(@PathVariable String startDate,
                                @PathVariable String endDate,
