@@ -52,9 +52,14 @@ public class SynDataJob {
                 continue;
             }
             if(!skip){
-                List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
-                mongoTemplate.insert(dailys, "daily");
-                logger.info("第{}条, 编码:{}", String.valueOf(++index), stockBasicVo.getTs_code());
+                try {
+                    List<DailyVo> dailys = dataService.daily(stockBasicVo.getTs_code(), start_date, end_date);
+                    mongoTemplate.insert(dailys, "daily");
+                    logger.info("第{}条, 编码:{}", String.valueOf(++index), stockBasicVo.getTs_code());
+                }catch (Exception e){
+                    logger.info("第{}条, 编码:{},发生异常:", String.valueOf(++index), stockBasicVo.getTs_code(), e);
+                }
+
             }
         }
     }

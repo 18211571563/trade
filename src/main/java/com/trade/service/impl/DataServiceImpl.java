@@ -7,6 +7,7 @@ import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
@@ -108,7 +109,12 @@ public class DataServiceImpl implements DataService {
                 .replaceAll("<start_date>", start_date)
                 .replaceAll("<end_date>", end_date);
         String response = restTemplate.getForObject(url, String.class);
-        List<DailyVo> data = JSON.parseObject(response, new TypeReference<List<DailyVo>>(){});
+
+        List<DailyVo> data = null;
+        if(StringUtils.isNotBlank(response)){
+            data = JSON.parseObject(response, new TypeReference<List<DailyVo>>(){});
+        }
+
         return data;
     }
 
