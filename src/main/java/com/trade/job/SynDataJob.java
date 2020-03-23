@@ -37,7 +37,7 @@ public class SynDataJob {
      * 同步交易日历
      */
     public void tradeCalSym(){
-        List<TradeDateVo> sse = dataService.tradeCal("SSE", "20100101", LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
+        List<TradeDateVo> sse = dataService.tradeCal("SSE", "20100101", LocalDate.now().format(TimeUtil.SHORT_DATE_FORMATTER));
         mongoTemplate.dropCollection("trade_cal");
         mongoTemplate.insert(sse, "trade_cal");
     }
