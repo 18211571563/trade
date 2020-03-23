@@ -13,6 +13,7 @@ import com.trade.vo.AssetVo;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import com.trade.vo.StockBasicVo;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -97,11 +98,38 @@ public class StrategyServiceImpl implements StrategyService {
      * @throws InterruptedException
      */
     @Override
-    public void process() throws InterruptedException {
-
+    public void process(String startDate, String endDate, String today, Boolean all, String tsCodes ) throws InterruptedException {
         // 初始化参数
-        this.init();
+        this.init(); // 默认读取配置文件
+        if(StringUtils.isNotBlank(startDate)) this.startDate = startDate;
+        if(StringUtils.isNotBlank(endDate)) this.endDate = endDate;
+        if(StringUtils.isNotBlank(today)) this.today = today;
+        if(all != null) this.all = all;
+        if(StringUtils.isNotBlank(tsCodes)) this.tsCodes = tsCodes.split(",");
+        process();
 
+    }
+
+    /**
+     * 启动多线程执行任务
+     * @throws InterruptedException
+     */
+    @Override
+    public void process(String startDate, String endDate, String today) throws InterruptedException {
+        // 初始化参数
+        this.init(); // 默认读取配置文件
+        if(StringUtils.isNotBlank(startDate)) this.startDate = startDate;
+        if(StringUtils.isNotBlank(endDate)) this.endDate = endDate;
+        if(StringUtils.isNotBlank(today)) this.today = today;
+        process();
+
+    }
+
+    /**
+     * 启动
+     * @throws InterruptedException
+     */
+    private void process() throws InterruptedException {
         // 获取 选样池信息
         if(all){
             List<StockBasicVo> stockBasicVos = dataService.stock_basic();
@@ -136,8 +164,7 @@ public class StrategyServiceImpl implements StrategyService {
      * 执行具体的标的任务
      * @param tsCode
      */
-    @Override
-    public void process(String tsCode){
+    private void process(String tsCode){
         /***************************************************************** for *********************************************************************/
         LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER);
         LocalDate endDateL = LocalDate.parse(endDate, TimeUtil.SHORT_DATE_FORMATTER);
@@ -155,8 +182,7 @@ public class StrategyServiceImpl implements StrategyService {
         assetLogger.info(JSON.toJSONString(CapitalManager.assetVo));
     }
 
-    @Override
-    public void process(String tsCode, String date){
+    private void process(String tsCode, String date){
 
         // 获取今日行情
         DailyVo daily = dataService.daily(tsCode, date, date).get(0);
