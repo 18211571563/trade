@@ -1,8 +1,7 @@
 package com.trade.controller;
 
 
-import com.trade.job.SynDataJob;
-import com.trade.service.StrategyService;
+import com.trade.service.strategy.StrategyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,15 +1,13 @@
 package com.trade.service.impl;
 
 import com.BaseTest;
-import com.trade.service.DataService;
+import com.trade.service.common.DataService;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 public class MongoDataServiceImplTest extends BaseTest {
 

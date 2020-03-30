@@ -1,24 +1,19 @@
-package com.trade.service.impl;
+package com.trade.service.common.impl;
 
 import com.trade.config.TradeConstantConfig;
-import com.trade.service.CalculateService;
-import com.trade.service.DataService;
-import com.trade.service.TradeService;
+import com.trade.service.common.CalculateService;
+import com.trade.service.common.DataService;
 import com.trade.utils.CapitalUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
-import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

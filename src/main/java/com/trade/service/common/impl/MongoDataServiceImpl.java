@@ -1,6 +1,6 @@
-package com.trade.service.impl;
+package com.trade.service.common.impl;
 
-import com.trade.service.DataService;
+import com.trade.service.common.DataService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;
@@ -18,7 +18,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 
 /**

@@ -1,4 +1,4 @@
-package com.trade.service;
+package com.trade.service.strategy;
 
 /**
  * @Author georgy

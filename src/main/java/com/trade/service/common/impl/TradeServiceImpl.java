@@ -1,7 +1,7 @@
-package com.trade.service.impl;
+package com.trade.service.common.impl;
 
 import com.trade.capital.CapitalManager;
-import com.trade.service.TradeService;
+import com.trade.service.common.TradeService;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

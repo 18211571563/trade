@@ -1,8 +1,8 @@
-package com.trade.service.impl;
+package com.trade.service.common.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
-import com.trade.service.DataService;
+import com.trade.service.common.DataService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;

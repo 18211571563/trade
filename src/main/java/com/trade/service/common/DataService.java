@@ -1,4 +1,4 @@
-package com.trade.service;
+package com.trade.service.common;
 
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;

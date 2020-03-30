@@ -1,17 +1,14 @@
 package com.trade.service.impl;
 
 import com.BaseTest;
-import com.trade.service.StrategyService;
+import com.trade.service.strategy.StrategyService;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-
-import static org.junit.Assert.*;
 
 public class StrategyServiceImplTest extends BaseTest {
 

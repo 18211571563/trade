@@ -1,6 +1,6 @@
 package com.trade.job;
 
-import com.trade.service.DataService;
+import com.trade.service.common.DataService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.StockBasicVo;
@@ -13,7 +13,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
