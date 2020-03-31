@@ -1,4 +1,4 @@
-package com.trade.service.strategy;
+package com.trade.service.strategy.open;
 
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;

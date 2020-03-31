@@ -39,6 +39,13 @@ public class MongoDataServiceImpl implements DataService {
         return mongoTemplate.findAll(StockBasicVo.class, "stock_basic");
     }
 
+    /**
+     * 获取 start_date 到 end_date 的 交易日 数据
+     * @param exchange
+     * @param start_date
+     * @param end_date
+     * @return
+     */
     @Override
     public List<TradeDateVo> tradeCal(String exchange, String start_date, String end_date) {
         Query query = new Query(
@@ -50,6 +57,11 @@ public class MongoDataServiceImpl implements DataService {
         return trade_cals;
     }
 
+    /**
+     * 判断 start_date 时候交易日
+     * @param start_date
+     * @return
+     */
     @Override
     public boolean tradeCal(String start_date) {
         List<TradeDateVo> tradeDateVos = this.tradeCal("SSE", start_date, start_date);
@@ -60,6 +72,13 @@ public class MongoDataServiceImpl implements DataService {
         return false;
     }
 
+    /**
+     * 获取 start_date 到 end_date 的数据
+     * @param ts_code
+     * @param start_date
+     * @param end_date
+     * @return
+     */
     @Override
     public List<DailyVo> daily(String ts_code, String start_date, String end_date) {
         Query query = new Query(
@@ -72,10 +91,17 @@ public class MongoDataServiceImpl implements DataService {
         return dailys;
     }
 
+    /**
+     * 获取 (date - back_day) 到 (date - 1) 的所有数据
+     * @param ts_code
+     * @param date
+     * @param back_day
+     * @return
+     */
     @Override
-    public List<DailyVo> daily(String ts_code, String start_date, int back_day) {
-        LocalDate startDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day, ChronoUnit.DAYS );
-        LocalDate endDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
+    public List<DailyVo> daily(String ts_code, String date, int back_day) {
+        LocalDate startDateL = LocalDate.parse(date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day, ChronoUnit.DAYS );
+        LocalDate endDateL = LocalDate.parse(date, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
         List<DailyVo> data = this.daily(ts_code,startDateL.format(TimeUtil.SHORT_DATE_FORMATTER),  endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
         return data;
     }

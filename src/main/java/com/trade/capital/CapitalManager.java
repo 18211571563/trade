@@ -28,7 +28,8 @@ public class CapitalManager {
 
     public void init(){
         tradeOrders = new ArrayList<>();
-        assetVo = AssetVo.create(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()), BigDecimal.valueOf(tradeConstantConfig.getRiskParameter()));
+        assetVo = AssetVo.create(   BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()),
+                                    BigDecimal.valueOf(tradeConstantConfig.getRiskParameter()));
     }
 
 

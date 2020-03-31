@@ -1,6 +1,7 @@
 package com.trade.service.common;
 
 import com.trade.vo.AssetVo;
+import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 
 import java.math.BigDecimal;
@@ -14,8 +15,10 @@ import java.util.List;
  */
 public interface TradeService {
 
-    void open(OrderVo orderVo, boolean isUsedCapitail);
-    void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail);
+    void open(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail);
+
+    void close(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail);
+
     OrderVo getOrderVo(String tsCode);
 
     BigDecimal getTotalCapital();
@@ -25,4 +28,6 @@ public interface TradeService {
     BigDecimal getRiskParameter();
 
     List<OrderVo> getTradeOrders();
+
+    Boolean isHoldPosition(OrderVo orderVo);
 }

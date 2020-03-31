@@ -1,10 +1,15 @@
 package com.trade.service.common.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
+import com.trade.config.TradeConstantConfig;
+import com.trade.service.common.LogFormatService;
 import com.trade.service.common.TradeService;
+import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -14,16 +19,22 @@ import java.util.List;
 /**
  * @Author georgy
  * @Date 2020-01-14 下午 2:40
- * @DESC TODO
+ * @DESC 交易服务
  */
 @Service
 public class TradeServiceImpl implements TradeService {
 
+    @Autowired
+    private TradeConstantConfig tradeConstantConfig;
+    @Autowired
+    private LogFormatService logFormatService;
+
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
+    Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
 
     @Override
-    public synchronized void open(OrderVo orderVo, boolean isUsedCapitail) {
+    public synchronized void open(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail) {
         // 判断现在的可用资金是否满足 订单金额
         if(isUsedCapitail && CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
             tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
@@ -33,12 +44,26 @@ public class TradeServiceImpl implements TradeService {
         // 开仓 - 保存订单
         CapitalManager.tradeOrders.add(orderVo);
         // 冻结金额
-        if(isUsedCapitail) this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
+        if(isUsedCapitail){
+            this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
+        }
+
+        // 记录交易日志
+        logFormatService.logOpen(tradeLogger, daily, orderVo);
+        if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
+            logFormatService.logOpen(todayTradeLogger, daily, orderVo);
+        }
     }
 
     @Override
-    public synchronized void close(OrderVo orderVo, BigDecimal closePrice, boolean isUsedCapitail) {
+    public synchronized void close(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail) {
+        // 获取收盘价
+        BigDecimal closePrice = new BigDecimal(daily.getClose());
+
+        // 移除仓位
         CapitalManager.tradeOrders.remove(orderVo);
+
+        // 核算资金
         if(isUsedCapitail){
             BigDecimal bp = BigDecimal.ZERO;
             // 计算交易损益(BP)
@@ -51,8 +76,15 @@ public class TradeServiceImpl implements TradeService {
             }else{
                 throw new RuntimeException("数据错误: 交易订单没有方向");
             }
-            this.calTotalCapital(bp); // 释放总资金
+
+            this.calTotalCapital(bp); // 核算总资金
             this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate()); // 释放锁定资金
+        }
+
+        // 记录交易日志
+        logFormatService.logClose(tradeLogger, daily, orderVo);
+        if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
+            logFormatService.logClose(todayTradeLogger, daily, orderVo);
         }
 
     }
@@ -121,5 +153,14 @@ public class TradeServiceImpl implements TradeService {
         return CapitalManager.tradeOrders;
     }
 
+    /**
+     * 判断是否持仓
+     * @param orderVo
+     * @return
+     */
+    @Override
+    public Boolean isHoldPosition(OrderVo orderVo) {
+        return orderVo != null;
+    }
 
 }

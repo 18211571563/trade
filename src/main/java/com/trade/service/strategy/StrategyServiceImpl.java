@@ -1,12 +1,12 @@
-package com.trade.service.strategy.impl;
+package com.trade.service.strategy;
 
 import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.DataService;
 import com.trade.service.common.TradeService;
-import com.trade.service.strategy.CloseStrategyService;
-import com.trade.service.strategy.OpenStrategyService;
+import com.trade.service.strategy.close.CloseStrategyService;
+import com.trade.service.strategy.open.OpenStrategyService;
 import com.trade.service.strategy.StrategyService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
 /**
  * @Author georgy
  * @Date 2020-01-09 下午 4:32
- * @DESC TODO
+ * @DESC 策略服务
  */
 @Service
 public class StrategyServiceImpl implements StrategyService {
@@ -50,8 +50,6 @@ public class StrategyServiceImpl implements StrategyService {
     private int filterDay;
 
     Logger logger = LoggerFactory.getLogger(getClass());
-    Logger tradeLogger = LoggerFactory.getLogger("trade");
-    Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
     Logger assetLogger = LoggerFactory.getLogger("asset");
 
     @Autowired
@@ -87,11 +85,10 @@ public class StrategyServiceImpl implements StrategyService {
         this.breakOpenDay = tradeConstantConfig.getBreakOpenDay();
         this.breakCloseDay = tradeConstantConfig.getBreakCloseDay();
         this.filterDay = tradeConstantConfig.getFilterDay();
-
     }
 
     /**
-     * 启动多线程执行任务
+     * 初始化配置 + 启动多线程执行任务
      * @throws InterruptedException
      */
     @Override
@@ -108,7 +105,7 @@ public class StrategyServiceImpl implements StrategyService {
     }
 
     /**
-     * 启动多线程执行任务
+     * 初始化配置 + 启动多线程执行任务
      * @throws InterruptedException
      */
     @Override
@@ -123,7 +120,7 @@ public class StrategyServiceImpl implements StrategyService {
     }
 
     /**
-     * 启动
+     * 启动多线程运行任务
      * @throws InterruptedException
      */
     private void process() throws InterruptedException {
@@ -144,6 +141,7 @@ public class StrategyServiceImpl implements StrategyService {
             executor.execute(() -> {
                 MDC.put("tsCode", tsCode);
                 this.process(tsCode);
+                assetLogger.info(JSON.toJSONString(CapitalManager.assetVo));
             });
         }
 
@@ -158,7 +156,7 @@ public class StrategyServiceImpl implements StrategyService {
     }
 
     /**
-     * 执行具体的标的任务
+     * 执行 标的 + 所有时间 任务
      * @param tsCode
      */
     private void process(String tsCode){
@@ -176,9 +174,13 @@ public class StrategyServiceImpl implements StrategyService {
                 logger.warn("非交易日:{}", date);
             }
         }
-        assetLogger.info(JSON.toJSONString(CapitalManager.assetVo));
     }
 
+    /**
+     * 执行 标的 + 某一天 任务
+     * @param tsCode
+     * @param date
+     */
     private void process(String tsCode, String date){
 
         // 获取今日行情
@@ -189,12 +191,11 @@ public class StrategyServiceImpl implements StrategyService {
         /***************************************************************** 开仓 ************************************************************************/
         openStrategyService.breakOpen(daily, orderVo);
 
-
         /***************************************************************** 止损 ************************************************************************/
         closeStrategyService.breakClose(daily, orderVo);
 
-
-//        // 获取滤镜，判断当前的开仓信号是否与长期趋势背离，如背离，终止交易
+        /***************************************************************** 滤镜 ************************************************************************/
+        // 滤镜: 判断当前的开仓信号是否与长期趋势背离，如背离，终止交易
 
 
 
