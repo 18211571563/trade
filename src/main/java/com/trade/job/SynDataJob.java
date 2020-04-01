@@ -43,6 +43,10 @@ public class SynDataJob {
 
     public void dailyOnlySym(String start_date, String end_date, boolean skip, String tsCode){
 
+        if(!start_date.equals(end_date)){
+            mongoTemplate.dropCollection("daily");
+        }
+
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         int index = 0;
         for (StockBasicVo stockBasicVo : stockBasicVos) {
@@ -65,6 +69,7 @@ public class SynDataJob {
 
     public void stockBasicSym(){
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
+        mongoTemplate.dropCollection("stock_basic");
         mongoTemplate.insert(stockBasicVos, "stock_basic");
     }
 
