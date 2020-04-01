@@ -24,4 +24,15 @@ public interface RecordTradeMessageService {
      * @param orderVo
      */
     void logClose(DailyVo daily, OrderVo orderVo);
+
+    /**
+     * 统计
+     * @param tsCode
+     */
+    void statistics(String tsCode);
+
+    /**
+     * 资金信息
+     */
+    void statisticsCapital();
 }

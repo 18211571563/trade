@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.DataService;
+import com.trade.service.common.RecordTradeMessageService;
 import com.trade.service.common.TradeService;
 import com.trade.service.strategy.close.CloseStrategyService;
 import com.trade.service.strategy.open.OpenStrategyService;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -51,7 +53,6 @@ public class StrategyServiceImpl implements StrategyService {
     private int filterDay;
 
     Logger logger = LoggerFactory.getLogger(getClass());
-    Logger assetLogger = LoggerFactory.getLogger("asset");
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
@@ -65,6 +66,8 @@ public class StrategyServiceImpl implements StrategyService {
     private OpenStrategyService openStrategyService;
     @Autowired
     private CloseStrategyService closeStrategyService;
+    @Autowired
+    private RecordTradeMessageService recordTradeMessageService;
 
     /**
      * 初始化启动项
@@ -148,7 +151,10 @@ public class StrategyServiceImpl implements StrategyService {
         executor .shutdown();
         while(true){
             if(executor.isTerminated()){
-                System.out.println("所有任务执行完成！");
+                // 打印资金信息
+                recordTradeMessageService.statisticsCapital();
+                
+                logger.info("所有任务执行完成！");
                 break;
             }
             Thread.sleep(1000);
@@ -174,15 +180,12 @@ public class StrategyServiceImpl implements StrategyService {
                 logger.warn("非交易日:{}", date);
             }
         }
-        assetLogger.info("########################### {} ###############################", tsCodes);
-        assetLogger.info("总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter());
-        List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(tsCode);
-        for (OrderBPVo orderBPVo : orderBPVos) {
-            assetLogger.info("标的:{}, 方向:{}, bp:{}, bp比率:{}, 开仓价:{}, 止损价:{}, 交易量:{}, 交易时间:{} ",
-                    orderBPVo.getTsCode(), orderBPVo.getDirection(), orderBPVo.getBp(), orderBPVo.getBpRate(), orderBPVo.getOpen(), orderBPVo.getClose(), orderBPVo.getVolume(), orderBPVo.getTradeDate());
-        }
-        assetLogger.info("--------------------------- {} -------------------------------", tsCodes);
+
+        // 统计交易记录
+        recordTradeMessageService.statistics(tsCode);
     }
+
+
 
     /**
      * 执行 标的 + 某一天 任务

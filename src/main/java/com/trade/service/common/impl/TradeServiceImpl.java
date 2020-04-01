@@ -31,7 +31,6 @@ public class TradeServiceImpl implements TradeService {
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
-    Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
 
     @Override
     public synchronized void open(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail) {

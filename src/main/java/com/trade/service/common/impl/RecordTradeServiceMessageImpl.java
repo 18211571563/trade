@@ -30,6 +30,7 @@ public class RecordTradeServiceMessageImpl implements RecordTradeMessageService 
 
     Logger tradeLogger = LoggerFactory.getLogger("trade");
     Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
+    Logger assetLogger = LoggerFactory.getLogger("asset");
 
 
     /** ################################################### public ########################################################################################## **/
@@ -61,6 +62,63 @@ public class RecordTradeServiceMessageImpl implements RecordTradeMessageService 
         this.saveTradeOrdersHistory(daily, orderVo);
     }
 
+    /**
+     * 统计
+     * @param tsCode
+     */
+    @Override
+    public void statistics(String tsCode) {
+        BigDecimal sucessCount = BigDecimal.ZERO; // 胜负次数
+        BigDecimal sfRate = BigDecimal.ZERO; // 胜负比例
+        BigDecimal totalBp = BigDecimal.ZERO;// 总损益
+        BigDecimal totalBpRate = BigDecimal.ZERO; // 总损益比例
+        BigDecimal maxBpRate = BigDecimal.ZERO; // 最大收益比例
+        BigDecimal minBpRate = BigDecimal.ZERO; // 最大回撤比例
+
+        assetLogger.info("########################### {} ###############################", tsCode);
+        List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(tsCode);
+        for (OrderBPVo orderBPVo : orderBPVos) {
+            String direction  = orderBPVo.getDirection() == 1? "多头":((orderBPVo.getDirection() == 0)? "空头":"未知") ;
+            assetLogger.info("交易流水 - 方向:{}, bp:{}, bp比率:{}, 开仓价:{}, 止损价:{}, 交易量:{}, 交易时间:{} ",
+                    direction, orderBPVo.getBp(), orderBPVo.getBpRate(), orderBPVo.getOpen(), orderBPVo.getClose(), orderBPVo.getVolume(), orderBPVo.getTradeDate());
+
+            // sucessCount: 胜利次数+1
+            if(orderBPVo.getBp().compareTo(BigDecimal.ZERO) > 0){
+                sucessCount = sucessCount.add(BigDecimal.ONE);
+            }
+
+            // totalBp
+            totalBp = totalBp.add(orderBPVo.getBp());
+
+            // totalBpRate
+            totalBpRate = totalBpRate.add(orderBPVo.getBpRate());
+
+            // maxBpRate/minBpRate
+            if(     orderBPVo.getBpRate().compareTo(BigDecimal.ZERO) > 0 &&
+                    orderBPVo.getBpRate().compareTo(maxBpRate) > 0){
+                maxBpRate = orderBPVo.getBpRate();
+            }else if(orderBPVo.getBpRate().compareTo(BigDecimal.ZERO) < 0 &&
+                    orderBPVo.getBpRate().compareTo(minBpRate) < 0){
+                minBpRate = orderBPVo.getBpRate();
+            }
+
+        }
+        sfRate = sucessCount.divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
+        assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜负次数:{}, 胜负比例:{}, 最大收益比例:{}, 最大回撤比例:{}",
+                totalBp, totalBpRate, sucessCount, sfRate, maxBpRate, minBpRate);
+        assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
+        assetLogger.info(" ");
+    }
+
+    /**
+     * 资金信息
+     */
+    @Override
+    public void statisticsCapital(){
+        assetLogger.info("########################### {} ###############################", "资金信息");
+        assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter());
+        assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
+    }
 
     /** ################################################### private ########################################################################################## **/
 
