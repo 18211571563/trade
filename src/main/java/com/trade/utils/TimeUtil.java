@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 public class TimeUtil {
 
     public static final DateTimeFormatter SHORT_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
+    public static final DateTimeFormatter LONG_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
 
 }

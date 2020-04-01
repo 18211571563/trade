@@ -6,5 +6,5 @@ package com.trade.service.strategy;
  * @DESC TODO
  */
 public interface StrategyService {
-    void process(String startDate, String endDate, String today, Boolean all, String tsCodes) throws InterruptedException;
+    String process(String startDate, String endDate, String today, Boolean all, String tsCodes) throws InterruptedException;
 }

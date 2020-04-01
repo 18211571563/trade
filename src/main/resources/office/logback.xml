@@ -30,22 +30,32 @@
     </appender>
 
     <!-- 资产日志 -->
-    <appender name="asset" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>E:/work/logs/trade/asset.log</File>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>INFO</level>
-            <!--<OnMismatch>DENY</OnMismatch>-->
-            <!--<OnMatch>ACCEPT</OnMatch>-->
-        </filter>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!--日志文件输出的文件名-->
-            <fileNamePattern>E:/work/logs/trade/asset_%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>7</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${DEFAULT_LOG_PATTERN}</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
+    <appender name="asset" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <key>traceId</key>
+            <defaultValue>default</defaultValue>
+        </discriminator>
+        <sift>
+            <!--具体的写日志appender，每一个taskId创建一个文件-->
+            <appender name="File-${tsCode}" class="ch.qos.logback.core.FileAppender">
+                <File>E:/work/logs/trade/asset/A_${traceId}.log</File>
+                <append>true</append>
+                <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                    <level>INFO</level>
+                    <!--<OnMismatch>DENY</OnMismatch>-->
+                    <!--<OnMatch>ACCEPT</OnMatch>-->
+                </filter>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <!--日志文件输出的文件名-->
+                    <fileNamePattern>E:/work/logs/trade/asset/A_${tsCode}_%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>7</maxHistory>
+                </rollingPolicy>
+                <encoder>
+                    <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+                    <charset>UTF-8</charset>
+                </encoder>
+            </appender>
+        </sift>
     </appender>
 
     <appender name="trade" class="ch.qos.logback.classic.sift.SiftingAppender">

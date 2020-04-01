@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -96,7 +97,10 @@ public class StrategyServiceImpl implements StrategyService {
      * @throws InterruptedException
      */
     @Override
-    public void process(String startDate, String endDate, String today, Boolean all, String tsCodes ) throws InterruptedException {
+    public String process(String startDate, String endDate, String today, Boolean all, String tsCodes ) throws InterruptedException {
+        // 记录本次操作的traceId
+        MDC.put("traceId", LocalDateTime.now().format(TimeUtil.LONG_DATE_FORMATTER));
+
         // 初始化参数
         this.init(); // 默认读取配置文件
         if(StringUtils.isNotBlank(startDate)) this.startDate = startDate;
@@ -107,6 +111,8 @@ public class StrategyServiceImpl implements StrategyService {
         Date date = new Date();
         process();
         logger.info(String.format("总耗时：%s", String.valueOf((new Date().getTime() - date.getTime()) / 1000 )) );
+
+        return MDC.get("traceId");
     }
 
 
@@ -126,10 +132,12 @@ public class StrategyServiceImpl implements StrategyService {
             tsCodes = initTsCodes.toArray(new String[initTsCodes.size()]);
         }
 
-
+        // 获取当前的traceId
+        String traceId = MDC.get("traceId");
         ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
             executor.execute(() -> {
+                MDC.put("traceId", traceId);
                 MDC.put("tsCode", tsCode);
                 this.process(tsCode);
             });
