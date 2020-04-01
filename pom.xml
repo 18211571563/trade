@@ -127,9 +127,16 @@
 
     <profiles>
         <profile>
-            <id>dev</id>
+            <id>home</id>
             <properties>
-                <env>dev</env>
+                <env>home</env>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>office</id>
+            <properties>
+                <env>office</env>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -137,9 +144,9 @@
         </profile>
 
         <profile>
-            <id>sit</id>
+            <id>cloud</id>
             <properties>
-                <env>sit</env>
+                <env>cloud</env>
             </properties>
         </profile>
 
