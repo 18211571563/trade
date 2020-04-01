@@ -1,6 +1,7 @@
 package com.trade.utils;
 
 import com.trade.vo.DailyVo;
+import com.trade.vo.OrderVo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -43,6 +44,48 @@ public class CapitalUtil {
             }
         }
         return data;
+    }
+
+    /**
+     * 计算BP
+     * @param daily
+     * @param orderVo
+     * @return
+     */
+    public static BigDecimal calcBp(DailyVo daily, OrderVo orderVo) {
+        BigDecimal bp = BigDecimal.ZERO;
+        // 计算交易损益(BP)
+        if(orderVo.getDirection() == 1){ // 多头头寸平仓计算 BP
+            bp = new BigDecimal(daily.getClose()).subtract(orderVo.getPrice()).multiply(orderVo.getVolume());
+
+        }else if(orderVo.getDirection() == 0){ // 空头头寸平仓计算 BP
+            bp = orderVo.getPrice().subtract(new BigDecimal(daily.getClose())).multiply(orderVo.getVolume());
+
+        }else{
+            throw new RuntimeException("数据错误: 交易订单没有方向");
+        }
+        return bp;
+    }
+
+    /**
+     * 计算BP_Rate
+     * @param daily
+     * @param orderVo
+     * @return
+     */
+    public static BigDecimal calcBpRate(DailyVo daily, OrderVo orderVo) {
+        BigDecimal bp_rate = BigDecimal.ZERO;
+        // 计算交易损益(BP)
+        if(orderVo.getDirection() == 1){ // 多头头寸平仓计算 BP
+            bp_rate = new BigDecimal(daily.getClose()).subtract(orderVo.getPrice()).divide(orderVo.getPrice(), 2, BigDecimal.ROUND_HALF_UP);
+
+        }else if(orderVo.getDirection() == 0){ // 空头头寸平仓计算 BP
+            bp_rate = orderVo.getPrice().subtract(new BigDecimal(daily.getClose())).divide(orderVo.getPrice(), 2, BigDecimal.ROUND_HALF_UP);
+
+        }else{
+            throw new RuntimeException("数据错误: 交易订单没有方向");
+        }
+        return bp_rate;
     }
 
     /**

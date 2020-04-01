@@ -10,6 +10,7 @@ import com.trade.service.strategy.open.OpenStrategyService;
 import com.trade.service.strategy.StrategyService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
+import com.trade.vo.OrderBPVo;
 import com.trade.vo.OrderVo;
 import com.trade.vo.StockBasicVo;
 import org.apache.commons.lang3.StringUtils;
@@ -141,7 +142,6 @@ public class StrategyServiceImpl implements StrategyService {
             executor.execute(() -> {
                 MDC.put("tsCode", tsCode);
                 this.process(tsCode);
-                assetLogger.info(JSON.toJSONString(CapitalManager.assetVo));
             });
         }
 
@@ -174,6 +174,14 @@ public class StrategyServiceImpl implements StrategyService {
                 logger.warn("非交易日:{}", date);
             }
         }
+        assetLogger.info("########################### {} ###############################", tsCodes);
+        assetLogger.info("总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter());
+        List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(tsCode);
+        for (OrderBPVo orderBPVo : orderBPVos) {
+            assetLogger.info("标的:{}, 方向:{}, bp:{}, bp比率:{}, 开仓价:{}, 止损价:{}, 交易量:{}, 交易时间:{} ",
+                    orderBPVo.getTsCode(), orderBPVo.getDirection(), orderBPVo.getBp(), orderBPVo.getBpRate(), orderBPVo.getOpen(), orderBPVo.getClose(), orderBPVo.getVolume(), orderBPVo.getTradeDate());
+        }
+        assetLogger.info("--------------------------- {} -------------------------------", tsCodes);
     }
 
     /**

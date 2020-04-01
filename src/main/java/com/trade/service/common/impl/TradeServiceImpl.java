@@ -1,10 +1,10 @@
 package com.trade.service.common.impl;
 
-import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
-import com.trade.service.common.LogFormatService;
+import com.trade.service.common.RecordTradeMessageService;
 import com.trade.service.common.TradeService;
+import com.trade.utils.CapitalUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class TradeServiceImpl implements TradeService {
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
     @Autowired
-    private LogFormatService logFormatService;
+    private RecordTradeMessageService recordTradeMessageService;
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
@@ -49,45 +49,27 @@ public class TradeServiceImpl implements TradeService {
         }
 
         // 记录交易日志
-        logFormatService.logOpen(tradeLogger, daily, orderVo);
-        if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
-            logFormatService.logOpen(todayTradeLogger, daily, orderVo);
-        }
+        recordTradeMessageService.logOpen(daily, orderVo);
     }
+
 
     @Override
     public synchronized void close(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail) {
-        // 获取收盘价
-        BigDecimal closePrice = new BigDecimal(daily.getClose());
 
         // 移除仓位
         CapitalManager.tradeOrders.remove(orderVo);
 
         // 核算资金
         if(isUsedCapitail){
-            BigDecimal bp = BigDecimal.ZERO;
-            // 计算交易损益(BP)
-            if(orderVo.getDirection() == 1){ // 多头头寸平仓计算 BP
-                bp = closePrice.subtract(orderVo.getPrice()).multiply(orderVo.getVolume());
-
-            }else if(orderVo.getDirection() == 0){ // 空头头寸平仓计算 BP
-                bp = orderVo.getPrice().subtract(closePrice).multiply(orderVo.getVolume());
-
-            }else{
-                throw new RuntimeException("数据错误: 交易订单没有方向");
-            }
-
+            BigDecimal bp = CapitalUtil.calcBp(daily, orderVo);
             this.calTotalCapital(bp); // 核算总资金
             this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate()); // 释放锁定资金
         }
 
         // 记录交易日志
-        logFormatService.logClose(tradeLogger, daily, orderVo);
-        if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
-            logFormatService.logClose(todayTradeLogger, daily, orderVo);
-        }
-
+        recordTradeMessageService.logClose(daily, orderVo);
     }
+
 
     /**
      * 获取交易池中的订单

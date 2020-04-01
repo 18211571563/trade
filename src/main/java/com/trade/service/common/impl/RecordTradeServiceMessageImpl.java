@@ -1,0 +1,133 @@
+package com.trade.service.common.impl;
+
+import com.alibaba.fastjson.JSON;
+import com.trade.capital.CapitalManager;
+import com.trade.config.TradeConstantConfig;
+import com.trade.service.common.RecordTradeMessageService;
+import com.trade.utils.CapitalUtil;
+import com.trade.vo.DailyVo;
+import com.trade.vo.OrderBPVo;
+import com.trade.vo.OrderVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @Author georgy
+ * @Date 2020-03-31 下午 3:32
+ * @DESC 记录交易信息服务
+ */
+@Service
+public class RecordTradeServiceMessageImpl implements RecordTradeMessageService {
+
+    @Autowired
+    private TradeConstantConfig tradeConstantConfig;
+
+    Logger tradeLogger = LoggerFactory.getLogger("trade");
+    Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
+
+
+    /** ################################################### public ########################################################################################## **/
+
+    /**
+     * 记录开仓信息
+     * @param daily
+     * @param orderVo
+     */
+    @Override
+    public void logOpen(DailyVo daily, OrderVo orderVo) {
+        this.logOpen(tradeLogger, daily, orderVo);
+        if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
+            this.logOpen(todayTradeLogger, daily, orderVo);
+        }
+    }
+
+    /**
+     * 记录平仓日志
+     * @param daily
+     * @param orderVo
+     */
+    @Override
+    public void logClose(DailyVo daily, OrderVo orderVo) {
+        this.logClose(tradeLogger, daily, orderVo);
+        if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
+            this.logClose(todayTradeLogger, daily, orderVo);
+        }
+        this.saveTradeOrdersHistory(daily, orderVo);
+    }
+
+
+    /** ################################################### private ########################################################################################## **/
+
+    /**
+     * 保存交易订单历史记录
+     * @param daily
+     * @param orderVo
+     */
+    private void saveTradeOrdersHistory(DailyVo daily, OrderVo orderVo) {
+        List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(daily.getTs_code());
+        if(orderBPVos == null){
+            orderBPVos = new ArrayList<>();
+            CapitalManager.tradeOrdersHistoryMap.put(daily.getTs_code(), orderBPVos);
+        }
+        OrderBPVo orderBPVo = new OrderBPVo(orderVo.getTsCode(), orderVo.getDirection(),CapitalUtil.calcBp(daily, orderVo),CapitalUtil.calcBpRate(daily, orderVo),daily.getTrade_date(), orderVo.getPrice(),new BigDecimal(daily.getClose()),orderVo.getVolume());
+        orderBPVos.add(orderBPVo);
+
+    }
+
+    /**
+     * 格式化平仓日志格式
+     * @param logger
+     * @param daily
+     * @param tradeOrderVo
+     */
+    private void logOpen(Logger logger, DailyVo daily, OrderVo tradeOrderVo) {
+        String direction = "未知";
+        if(tradeOrderVo.getDirection() == 0){
+            direction = "空头";
+        }else if(tradeOrderVo.getDirection() == 1){
+            direction = "多头";
+        }
+
+        logger.info("交易 - 标的:{}, 方向:{}, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}",
+                tradeOrderVo.getTsCode(),
+                direction,
+                tradeOrderVo.getPrice(),
+                tradeOrderVo.getVolume(),
+                daily.getTrade_date(),
+                JSON.toJSONString(tradeOrderVo));
+    }
+
+    /**
+     * 格式化平仓日志格式
+     * @param daily
+     * @param orderVo
+     * @param logger
+     */
+    private void logClose(Logger logger, DailyVo daily, OrderVo orderVo) {
+        String direction = "未知";
+
+        if(orderVo.getDirection() == 0){
+            direction = "平空";
+        }else if(orderVo.getDirection() == 1){
+            direction = "平多";
+        }
+
+        logger.info("止损 - 标的:{}, 方向:{}, 损益:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}",
+                orderVo.getTsCode(),
+                direction,
+                CapitalUtil.calcBp(daily, orderVo).doubleValue(),
+                CapitalUtil.calcBpRate(daily, orderVo).doubleValue(),
+                daily.getTrade_date(),
+                orderVo.getPrice(),
+                daily.getClose(),
+                orderVo.getVolume(),
+                JSON.toJSONString(orderVo));
+    }
+
+}
