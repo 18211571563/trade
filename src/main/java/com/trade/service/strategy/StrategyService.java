@@ -7,7 +7,4 @@ package com.trade.service.strategy;
  */
 public interface StrategyService {
     void process(String startDate, String endDate, String today, Boolean all, String tsCodes) throws InterruptedException;
-
-    void process(String startDate, String endDate, String today) throws InterruptedException;
-
 }

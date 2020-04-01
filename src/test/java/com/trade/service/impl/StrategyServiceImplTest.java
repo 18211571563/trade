@@ -21,9 +21,7 @@ public class StrategyServiceImplTest extends BaseTest {
 
     @Test
     public void process() throws InterruptedException {
-        Date date = new Date();
-        strategyService.process("","","");
-        logger.info("总耗时：" + String.valueOf((new Date().getTime() - date.getTime()) / 1000 ));
+        strategyService.process("","","", null, null);
     }
 
 }

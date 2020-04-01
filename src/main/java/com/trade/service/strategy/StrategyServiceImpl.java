@@ -104,24 +104,11 @@ public class StrategyServiceImpl implements StrategyService {
         if(StringUtils.isNotBlank(today)) this.today = today;
         if(all != null) this.all = all;
         if(StringUtils.isNotBlank(tsCodes)) this.tsCodes = tsCodes.split(",");
+        Date date = new Date();
         process();
-
+        logger.info(String.format("总耗时：%s", String.valueOf((new Date().getTime() - date.getTime()) / 1000 )) );
     }
 
-    /**
-     * 初始化配置 + 启动多线程执行任务
-     * @throws InterruptedException
-     */
-    @Override
-    public void process(String startDate, String endDate, String today) throws InterruptedException {
-        // 初始化参数
-        this.init(); // 默认读取配置文件
-        if(StringUtils.isNotBlank(startDate)) this.startDate = startDate;
-        if(StringUtils.isNotBlank(endDate)) this.endDate = endDate;
-        if(StringUtils.isNotBlank(today)) this.today = today;
-        process();
-
-    }
 
     /**
      * 启动多线程运行任务
@@ -195,7 +182,10 @@ public class StrategyServiceImpl implements StrategyService {
     private void process(String tsCode, String date){
 
         // 获取今日行情
-        DailyVo daily = dataService.daily(tsCode, date, date).get(0);
+        List<DailyVo> dailys = dataService.daily(tsCode, date, date);
+        if(dailys == null || dailys.size() == 0) return;
+        DailyVo daily = dailys.get(0);
+
         // 获取仓位信息
         OrderVo orderVo = tradeService.getOrderVo(tsCode);
 

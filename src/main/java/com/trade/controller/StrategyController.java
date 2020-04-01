@@ -2,6 +2,7 @@ package com.trade.controller;
 
 
 import com.trade.service.strategy.StrategyService;
+import com.trade.utils.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 
@@ -22,13 +24,34 @@ public class StrategyController {
     @Autowired
     private StrategyService strategyService;
 
-    @GetMapping(value = "process/{startDate}/{endDate}/{today}")
+    @GetMapping(value = "process")
+    public String process() throws InterruptedException {
+        String today = LocalDate.now().format(TimeUtil.SHORT_DATE_FORMATTER);
+        String startDate = LocalDate.parse(today, TimeUtil.SHORT_DATE_FORMATTER).minusYears(1).format(TimeUtil.SHORT_DATE_FORMATTER);
+        this.process(startDate , today, today, null, null);
+        return "success";
+    }
+
+    @GetMapping(value = "process/{tsCodes}")
+    public String process(@PathVariable String tsCodes) throws InterruptedException {
+        String today = LocalDate.now().format(TimeUtil.SHORT_DATE_FORMATTER);
+        String startDate = LocalDate.parse(today, TimeUtil.SHORT_DATE_FORMATTER).minusYears(1).format(TimeUtil.SHORT_DATE_FORMATTER);
+        this.process(startDate , today, today, false, tsCodes);
+        return "success";
+    }
+
+    @GetMapping(value = "process/{startDate}/{endDate}")
+    public String process(@PathVariable String startDate,
+                          @PathVariable String endDate) throws InterruptedException {
+        this.process(startDate, endDate, endDate, null, null);
+        return "success";
+    }
+
+    @GetMapping(value = "process/{startDate}/{endDate}/{tsCodes}")
     public String process(@PathVariable String startDate,
                           @PathVariable String endDate,
-                          @PathVariable String today) throws InterruptedException {
-        Date date = new Date();
-        strategyService.process(startDate, endDate, today);
-        logger.info(String.format("总耗时：%s", String.valueOf((new Date().getTime() - date.getTime()) / 1000 )) );
+                          @PathVariable String tsCodes) throws InterruptedException {
+        this.process(startDate, endDate, endDate, false, tsCodes);
         return "success";
     }
 
@@ -38,9 +61,7 @@ public class StrategyController {
                           @PathVariable String today,
                           @PathVariable Boolean all,
                           @PathVariable String tsCodes) throws InterruptedException {
-        Date date = new Date();
         strategyService.process(startDate, endDate, today, all, tsCodes);
-        logger.info(String.format("总耗时：%s", String.valueOf((new Date().getTime() - date.getTime()) / 1000 )) );
         return "success";
     }
 
