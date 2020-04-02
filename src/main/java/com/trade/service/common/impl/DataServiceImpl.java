@@ -128,7 +128,7 @@ public class DataServiceImpl implements DataService {
     @Override
     @Cacheable(key = "'daily-'+#ts_code+'-'+#start_date+'-'+#back_day")
     public List<DailyVo> daily(String ts_code, String start_date, int back_day){
-        int limit = back_day > 10? back_day: 10; // 扩大梯度
+        int limit = back_day > 15? back_day: 15; // 扩大梯度
         LocalDate startDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day + limit, ChronoUnit.DAYS );
         LocalDate endDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
         List<DailyVo> data = this.daily(ts_code,startDateL.format(TimeUtil.SHORT_DATE_FORMATTER),  endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
