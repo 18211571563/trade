@@ -58,7 +58,7 @@ public class MongoDataServiceImpl implements DataService {
     }
 
     /**
-     * 判断 start_date 时候交易日
+     * 交易日历 - 判断当前时间是否交易日
      * @param start_date
      * @return
      */
@@ -92,7 +92,7 @@ public class MongoDataServiceImpl implements DataService {
     }
 
     /**
-     * 获取 (date - back_day) 到 (date - 1) 的所有数据
+     * 日线行情 - 获取当前时间往后M个交易日的数据 -> 扩大查询范围，之后获取前 back_day 条数据
      * @param ts_code
      * @param date
      * @param back_day
@@ -100,9 +100,10 @@ public class MongoDataServiceImpl implements DataService {
      */
     @Override
     public List<DailyVo> daily(String ts_code, String date, int back_day) {
-        LocalDate startDateL = LocalDate.parse(date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day, ChronoUnit.DAYS );
+        int limit = back_day > 10? back_day: 10; // 扩大梯度
+        LocalDate startDateL = LocalDate.parse(date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day + limit, ChronoUnit.DAYS );
         LocalDate endDateL = LocalDate.parse(date, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
         List<DailyVo> data = this.daily(ts_code,startDateL.format(TimeUtil.SHORT_DATE_FORMATTER),  endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
-        return data;
+        return data.subList(0, back_day);
     }
 }

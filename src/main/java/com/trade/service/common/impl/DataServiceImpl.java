@@ -72,7 +72,7 @@ public class DataServiceImpl implements DataService {
     }
 
     /**
-     * 交易日历
+     * 交易日历 - 判断当前时间是否交易日
      * @param start_date
      * @return
      */
@@ -119,7 +119,7 @@ public class DataServiceImpl implements DataService {
     }
 
     /**
-     * 日线行情 - 获取当前时间往后M的天数据
+     * 日线行情 - 获取当前时间往后M个交易日的数据 -> 扩大查询范围，之后获取前 back_day 条数据
      * @param ts_code
      * @param start_date
      * @param back_day 往后几天
@@ -128,10 +128,11 @@ public class DataServiceImpl implements DataService {
     @Override
     @Cacheable(key = "'daily-'+#ts_code+'-'+#start_date+'-'+#back_day")
     public List<DailyVo> daily(String ts_code, String start_date, int back_day){
-        LocalDate startDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day, ChronoUnit.DAYS );
+        int limit = back_day > 10? back_day: 10; // 扩大梯度
+        LocalDate startDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(back_day + limit, ChronoUnit.DAYS );
         LocalDate endDateL = LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER).minus(1, ChronoUnit.DAYS );
         List<DailyVo> data = this.daily(ts_code,startDateL.format(TimeUtil.SHORT_DATE_FORMATTER),  endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
-        return data;
+        return data.subList(0, back_day);
     }
 
 }
