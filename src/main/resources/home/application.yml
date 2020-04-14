@@ -38,7 +38,7 @@ http:
 message:
   url: http://118.89.203.94:3000
   service:
-    daily: /pro_bar/<ts_code>/<start_date>/<end_date>
+    daily: /pro_bar/E/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
     stock_basic: /stock_basic
 
