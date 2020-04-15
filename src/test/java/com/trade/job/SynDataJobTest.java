@@ -21,8 +21,7 @@ public class SynDataJobTest extends BaseTest {
     @Test
     public void dailyOnlySym() {
         synDataJob.dailyOnlySym("20150101",
-                LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER),
-                false, "");
+                LocalDate.now().minus(1, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER));
     }
 
     /**

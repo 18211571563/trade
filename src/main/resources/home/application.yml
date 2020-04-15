@@ -38,7 +38,7 @@ http:
 message:
   url: http://118.89.203.94:3000
   service:
-    daily: /pro_bar/E/<ts_code>/<start_date>/<end_date>
+    daily: /pro_bar/<asset>/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
     stock_basic: /stock_basic
     index_basic: /index_basic/<market>
@@ -57,3 +57,9 @@ trade:
     CICC: "中金指数"
     SW: "申万指数"
     OTH: "其他指数"
+  used_index_basic_tsCodes:
+    "000001.SH": "上证指数"
+    "399001.SZ": "深证成指"
+    "000016.SH": "上证50"
+    "000300.SH": "沪深300指数"
+    "000905.SH": "中证500指数"

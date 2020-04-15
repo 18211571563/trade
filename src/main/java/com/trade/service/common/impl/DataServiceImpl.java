@@ -133,7 +133,17 @@ public class DataServiceImpl implements DataService {
             e.printStackTrace();
         }
 
+        // 判断 资产类别(asset)
+        String asset = "E";
+
+        // 判断 ts_code 是否属于指数
+        if(indexMarketConstantConfig.getUsed_index_basic_tsCodes().containsKey(ts_code)){
+            asset = "I";
+        }
+
+        // 发起请求
         String url = BASE_URL + DAILY
+                .replaceAll("<asset>", asset)
                 .replaceAll("<ts_code>", ts_code)
                 .replaceAll("<start_date>", start_date)
                 .replaceAll("<end_date>", end_date);

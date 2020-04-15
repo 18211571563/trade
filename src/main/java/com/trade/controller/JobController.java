@@ -17,23 +17,14 @@ public class JobController {
 
     @GetMapping(value = "/d/{date}")
     public String dailyOnlySym(@PathVariable String date) {
-        synDataJob.dailyOnlySym(date, date, false,"");
+        synDataJob.dailyOnlySym(date, date);
         return "success";
     }
 
     @GetMapping(value = "/d/{startDate}/{endDate}")
     public String dailyOnlySym(@PathVariable String startDate,
                                @PathVariable String endDate) {
-        synDataJob.dailyOnlySym(startDate, endDate, false,"");
-        return "success";
-    }
-
-    @GetMapping(value = "/d/{startDate}/{endDate}/{skip}/{tsCode}")
-    public String dailyOnlySym(@PathVariable String startDate,
-                               @PathVariable String endDate,
-                               @PathVariable boolean skip,
-                               @PathVariable String tsCode) {
-        synDataJob.dailyOnlySym(startDate, endDate, skip,tsCode);
+        synDataJob.dailyOnlySym(startDate, endDate);
         return "success";
     }
 
