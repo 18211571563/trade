@@ -15,5 +15,5 @@ public interface CloseStrategyService {
      * @param daily
      * @param orderVo
      */
-    void breakClose(DailyVo daily, OrderVo orderVo);
+    void close(DailyVo daily, OrderVo orderVo);
 }

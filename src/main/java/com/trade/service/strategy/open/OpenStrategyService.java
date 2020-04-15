@@ -15,7 +15,6 @@ public interface OpenStrategyService {
      * @param daily
      * @param orderVo
      */
-    void breakOpen(DailyVo daily, OrderVo orderVo);
-
+    void open(DailyVo daily, OrderVo orderVo);
 
 }

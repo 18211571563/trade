@@ -198,10 +198,10 @@ public class StrategyServiceImpl implements StrategyService {
         OrderVo orderVo = tradeService.getOrderVo(tsCode);
 
         /***************************************************************** 开仓 ************************************************************************/
-        openStrategyService.breakOpen(daily, orderVo);
+        openStrategyService.open(daily, orderVo);
 
         /***************************************************************** 止损 ************************************************************************/
-        closeStrategyService.breakClose(daily, orderVo);
+        closeStrategyService.close(daily, orderVo);
 
         /***************************************************************** 滤镜 ************************************************************************/
         // 滤镜: 判断当前的开仓信号是否与长期趋势背离，如背离，终止交易

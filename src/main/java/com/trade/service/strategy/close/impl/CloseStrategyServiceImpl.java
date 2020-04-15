@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * @Author georgy
  * @Date 2020-03-30 上午 11:35
- * @DESC TODO
+ * @DESC 止损策略
  */
 @Service
 public class CloseStrategyServiceImpl implements CloseStrategyService {
@@ -34,35 +34,43 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
     private BearCloseStrategyService bearCloseStrategyService;
     @Autowired
     private BullCloseStrategyService bullCloseStrategyService;
+    @Autowired
+    private TradeService tradeService;
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * 止损策略
+     * @param daily
+     * @param orderVo
+     */
+    public void close(DailyVo daily, OrderVo orderVo) {
+        /***************************************************************** 是否容许止损 ************************************************************************/
+        if(!tradeService.allowClose(daily, orderVo)) return;
+
+        /***************************************************************** 止损策略逻辑 ************************************************************************/
+        this.breakClose(daily, orderVo);
+
+    }
 
     /**
      * 突破止损策略
      * @param daily
      * @param orderVo
      */
-    public void breakClose(DailyVo daily, OrderVo orderVo) {
-        String tsCode = daily.getTs_code();
-        String date = daily.getTrade_date();
-
+    private void breakClose(DailyVo daily, OrderVo orderVo) {
         // 计算突破点
-        List<DailyVo> breakCloseDailyVo = dataService.daily(tsCode, date, tradeConstantConfig.getBreakCloseDay());
+        List<DailyVo> breakCloseDailyVo = dataService.daily(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getBreakCloseDay());
         DailyVo maxClose = CapitalUtil.getMax(breakCloseDailyVo);
         DailyVo minClose = CapitalUtil.getMin(breakCloseDailyVo);
 
-        if(orderVo != null && orderVo.getDirection() == 0){
+        if(orderVo.getDirection() == 0){ // 空头止损
             bearCloseStrategyService.bearBreakClose(daily, maxClose, orderVo);
 
-        }else if(orderVo != null && orderVo.getDirection() == 1){
+        }else if(orderVo.getDirection() == 1){ // 多头止损
             bullCloseStrategyService.bullBreakClose(daily, minClose, orderVo);
 
-        }else {
-            logger.info("止损 - 没有头寸无需止损, 交易日:{}, 数据:{}" ,daily.getTrade_date() , JSON.toJSONString(daily));
-
         }
-
     }
 
 }

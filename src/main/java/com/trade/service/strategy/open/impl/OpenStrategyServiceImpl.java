@@ -43,44 +43,68 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * 突破开仓策略
+     * 开仓策略
      * @param daily
      * @param orderVo
      */
     @Override
-    public void breakOpen( DailyVo daily, OrderVo orderVo) {
-        String tsCode = daily.getTs_code();
-        String date = daily.getTrade_date();
+    public void open( DailyVo daily, OrderVo orderVo) {
+        /***************************************************************** 是否容许开仓 ************************************************************************/
+        if(!tradeService.allowOpen(daily, orderVo)) return;
 
+        /***************************************************************** 获取过滤线趋势 ************************************************************************/
+        BigDecimal filterTrend = calculateService.getFilterTrend(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getFilterDay());
+
+        /***************************************************************** 开仓策略逻辑 ************************************************************************/
+        this.breakOpen(daily, filterTrend);
+
+    }
+
+    /**
+     * 突破开仓策略
+     * @param daily
+     * @param filterTrend
+     */
+    private void breakOpen(DailyVo daily, BigDecimal filterTrend) {
         // 计算突破点
-        List<DailyVo> breakOpenDailyVo = dataService.daily(tsCode, date, tradeConstantConfig.getBreakOpenDay());
+        List<DailyVo> breakOpenDailyVo = dataService.daily(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getBreakOpenDay());
         DailyVo maxOpen = CapitalUtil.getMax(breakOpenDailyVo);
         DailyVo minOpen = CapitalUtil.getMin(breakOpenDailyVo);
 
+        if(filterTrend.compareTo(BigDecimal.ZERO) > 0){
+            logger.info("过滤线方向大于零,运行多头策略!");
+
+            bullOpenStrategyService.bullBreakOpen(daily, maxOpen);
+
+        }else if(filterTrend.compareTo(BigDecimal.ZERO) < 0){
+            logger.info("过滤线方向小于零,运行空头策略!");
+            bearOpenStrategyService.bearBreakOpen(daily, minOpen);
+
+        }else if(filterTrend.compareTo(BigDecimal.ZERO) == 0) {
+            logger.info("过滤线无方向(0),不进行开仓!");
+            return;
+        }
+    }
+
+    /**
+     * 突破波动率(R)开仓策略
+     * @param daily
+     * @param orderVo
+     */
+    private void breakROpen(DailyVo daily, OrderVo orderVo) {
+        String tsCode = daily.getTs_code();
+        String date = daily.getTrade_date();
+
+
+
         // 判断是否持仓
         Boolean isHoldPosition = tradeService.isHoldPosition(orderVo);
-        if(!isHoldPosition){ // 空仓
-            /***************************************************************** 获取过滤线趋势 ************************************************************************/
-            BigDecimal filterTrend = calculateService.getFilterTrend(tsCode, date, tradeConstantConfig.getFilterDay());
-
-
-            /***************************************************************** 开仓策略逻辑 ************************************************************************/
-            if(filterTrend.compareTo(BigDecimal.ZERO) > 0){
-                logger.info("过滤线方向大于零,运行多头策略!");
-                bullOpenStrategyService.bullBreakOpen(daily, maxOpen);
-
-            }else if(filterTrend.compareTo(BigDecimal.ZERO) < 0){
-                logger.info("过滤线方向小于零,运行空头策略!");
-                bearOpenStrategyService.bearBreakOpen(daily, minOpen);
-
-            }else if(filterTrend.compareTo(BigDecimal.ZERO) == 0) {
-                logger.info("过滤线无方向(0),不进行开仓!");
-                return;
-            }
+        if(!isHoldPosition) { // 空仓
 
         }else{
             logger.info("已经存在仓位无需交易, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
         }
+
     }
 
 }

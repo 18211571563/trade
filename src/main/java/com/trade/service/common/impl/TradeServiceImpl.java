@@ -1,5 +1,6 @@
 package com.trade.service.common.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.RecordTradeMessageService;
@@ -142,6 +143,42 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public Boolean isHoldPosition(OrderVo orderVo) {
         return orderVo != null;
+    }
+
+    /**
+     * 是否容许开仓
+     * @param daily
+     * @param orderVo
+     * @return
+     */
+    @Override
+    public Boolean allowOpen(DailyVo daily, OrderVo orderVo) {
+        Boolean allow = true;
+        // 判断是否持仓
+        Boolean isHoldPosition = this.isHoldPosition(orderVo);
+        if(isHoldPosition){ // 持有仓位
+            logger.info("已经存在仓位无需交易, 交易日:{}, 数据:{}" ,daily.getTrade_date() , JSON.toJSONString(daily));
+            allow = false;
+        }
+        return allow;
+    }
+
+    /**
+     * 是否容许止损
+     * @param daily
+     * @param orderVo
+     * @return
+     */
+    @Override
+    public Boolean allowClose(DailyVo daily, OrderVo orderVo) {
+        Boolean allow = true;
+        // 判断是否持仓
+        Boolean isHoldPosition = this.isHoldPosition(orderVo);
+        if(!isHoldPosition){ // 没有持有仓位
+            logger.info("止损 - 没有头寸无需止损, 交易日:{}, 数据:{}" ,daily.getTrade_date() , JSON.toJSONString(daily));
+            allow = false;
+        }
+        return allow;
     }
 
 }

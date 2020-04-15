@@ -30,4 +30,8 @@ public interface TradeService {
     List<OrderVo> getTradeOrders();
 
     Boolean isHoldPosition(OrderVo orderVo);
+
+    Boolean allowOpen(DailyVo daily, OrderVo orderVo);
+
+    Boolean allowClose(DailyVo daily, OrderVo orderVo);
 }
