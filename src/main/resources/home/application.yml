@@ -41,7 +41,19 @@ message:
     daily: /pro_bar/E/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
     stock_basic: /stock_basic
+    index_basic: /index_basic/<market>
 
 ##日志文件配置
 logging:
   config: classpath:logback.xml
+
+## 指数 - 市场说明(market)
+trade:
+  index_basic_markets:
+    MSCI: "MSCI指数"
+    CSI: "中证指数"
+    SSE: "上交所指数"
+    SZSE: "深交所指数"
+    CICC: "中金指数"
+    SW: "申万指数"
+    OTH: "其他指数"

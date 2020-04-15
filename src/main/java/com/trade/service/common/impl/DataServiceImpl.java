@@ -2,14 +2,17 @@ package com.trade.service.common.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.trade.config.IndexMarketConstantConfig;
 import com.trade.service.common.DataService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
+import com.trade.vo.IndexBasicVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -18,7 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author georgy
@@ -40,6 +45,11 @@ public class DataServiceImpl implements DataService {
     private String TRADE_CAL;
     @Value("${message.service.stock_basic}")
     private String STOCK_BASIC;
+    @Value("${message.service.index_basic}")
+    private String INDEX_BASIC;
+
+    @Autowired
+    private IndexMarketConstantConfig indexMarketConstantConfig;
 
     /**
      * 股票列表
@@ -52,6 +62,25 @@ public class DataServiceImpl implements DataService {
         String response = restTemplate.getForObject(url, String.class);
         List<StockBasicVo> data = JSON.parseObject(response, new TypeReference<List<StockBasicVo>>(){});
         return data;
+    }
+
+    /**
+     * 指数列表
+     * @return
+     */
+    @Override
+    @Cacheable(key = "'index_basic'")
+    public List<IndexBasicVo> index_basic(){
+        List<IndexBasicVo> datas = new ArrayList<>();
+        indexMarketConstantConfig.getIndex_basic_markets().forEach((k, v) ->{
+            String url = BASE_URL + INDEX_BASIC
+                    .replaceAll("<market>", k);
+            String response = restTemplate.getForObject(url, String.class);
+            List<IndexBasicVo> data = JSON.parseObject(response, new TypeReference<List<IndexBasicVo>>(){});
+            datas.addAll(data);
+        });
+
+        return datas;
     }
 
     /**

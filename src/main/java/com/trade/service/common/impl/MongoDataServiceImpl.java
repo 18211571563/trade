@@ -3,6 +3,7 @@ package com.trade.service.common.impl;
 import com.trade.service.common.DataService;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
+import com.trade.vo.IndexBasicVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 import org.slf4j.Logger;
@@ -37,6 +38,11 @@ public class MongoDataServiceImpl implements DataService {
     @Override
     public List<StockBasicVo> stock_basic() {
         return mongoTemplate.findAll(StockBasicVo.class, "stock_basic");
+    }
+
+    @Override
+    public List<IndexBasicVo> index_basic() {
+        return mongoTemplate.findAll(IndexBasicVo.class, "index_basic");
     }
 
     /**

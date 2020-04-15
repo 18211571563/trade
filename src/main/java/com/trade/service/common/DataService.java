@@ -1,6 +1,7 @@
 package com.trade.service.common;
 
 import com.trade.vo.DailyVo;
+import com.trade.vo.IndexBasicVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 import org.springframework.cache.annotation.Cacheable;
@@ -15,6 +16,8 @@ import java.util.List;
 public interface DataService {
 
     List<StockBasicVo> stock_basic();
+
+    List<IndexBasicVo> index_basic();
 
     List<TradeDateVo> tradeCal(String exchange, String start_date, String end_date);
 

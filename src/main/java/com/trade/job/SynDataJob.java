@@ -67,6 +67,9 @@ public class SynDataJob {
         }
     }
 
+    /**
+     * 同步标的列表
+     */
     public void stockBasicSym(){
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         mongoTemplate.dropCollection("stock_basic");

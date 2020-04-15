@@ -2,10 +2,12 @@ package com.trade.service.impl;
 
 import com.BaseTest;
 import com.trade.service.common.DataService;
+import com.trade.vo.IndexBasicVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 
@@ -18,6 +20,12 @@ public class MongoDataServiceImplTest extends BaseTest {
     public void stock_basic() {
         List<StockBasicVo> stockBasicVos = dataService.stock_basic();
         System.out.println(stockBasicVos.size());
+    }
+
+    @Test
+    public void index_basic() {
+        List<IndexBasicVo> indexBasicVos = dataService.index_basic();
+        System.out.println(indexBasicVos.size());
     }
 
     @Test
