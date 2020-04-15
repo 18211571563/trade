@@ -45,14 +45,14 @@ public class StrategyController {
         return this.process(startDate, endDate, endDate, null, null);
     }
 
-    @GetMapping(value = "process/{startDate}/{endDate}/{tsCodes}")
+    @GetMapping(value = "process/{tsCodes}/{startDate}/{endDate}")
     public String process(@PathVariable String startDate,
                           @PathVariable String endDate,
                           @PathVariable String tsCodes) throws InterruptedException {
         return this.process(startDate, endDate, endDate, false, tsCodes);
     }
 
-    @GetMapping(value = "process/{startDate}/{endDate}/{today}/{all}/{tsCodes}")
+    @GetMapping(value = "process/{tsCodes}/{startDate}/{endDate}/{today}/{all}")
     public String process(@PathVariable String startDate,
                           @PathVariable String endDate,
                           @PathVariable String today,
