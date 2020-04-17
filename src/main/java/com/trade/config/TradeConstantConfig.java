@@ -11,6 +11,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class TradeConstantConfig {
 
+    /** 开仓策略编码 **/
+    @Value("${trade.constant.strategy.code.open}")
+    private String openStrategyCode;
+
+    /** 止损策略编码 **/
+    @Value("${trade.constant.strategy.code.close}")
+    private String closeStrategyCode;
+
     /** 私有选样池 **/
     @Value("${trade.constant.tsCodes}")
     private String[] tsCodes;
@@ -67,6 +75,21 @@ public class TradeConstantConfig {
     @Value("${trade.constant.riskParameter}")
     private int riskParameter;
 
+    public String getOpenStrategyCode() {
+        return openStrategyCode;
+    }
+
+    public void setOpenStrategyCode(String openStrategyCode) {
+        this.openStrategyCode = openStrategyCode;
+    }
+
+    public String getCloseStrategyCode() {
+        return closeStrategyCode;
+    }
+
+    public void setCloseStrategyCode(String closeStrategyCode) {
+        this.closeStrategyCode = closeStrategyCode;
+    }
 
     public String[] getTsCodes() {
         return tsCodes;

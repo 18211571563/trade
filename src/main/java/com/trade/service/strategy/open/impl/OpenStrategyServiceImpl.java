@@ -1,6 +1,7 @@
 package com.trade.service.strategy.open.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.trade.config.StrategyConstantConfig;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.CalculateService;
 import com.trade.service.common.DataService;
@@ -40,6 +41,7 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
     @Autowired
     private BullOpenStrategyService bullOpenStrategyService;
 
+
     Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
@@ -48,7 +50,7 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
      * @param orderVo
      */
     @Override
-    public void open( DailyVo daily, OrderVo orderVo) {
+    public void open( DailyVo daily, OrderVo orderVo, String openStrategyCode) {
         /***************************************************************** 是否容许开仓 ************************************************************************/
         if(!tradeService.allowOpen(daily, orderVo)) return;
 
@@ -56,7 +58,12 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
         BigDecimal filterTrend = calculateService.getFilterTrend(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getFilterDay());
 
         /***************************************************************** 开仓策略逻辑 ************************************************************************/
-        this.breakOpen(daily, filterTrend);
+        if(tradeService.selectOpenStrategy("breakOpen").equals(openStrategyCode)){
+            this.breakOpen(daily, filterTrend);
+        }else{
+            throw new RuntimeException("没有可用的开仓策略");
+        }
+
 
     }
 
@@ -73,7 +80,6 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
 
         if(filterTrend.compareTo(BigDecimal.ZERO) > 0){
             logger.info("过滤线方向大于零,运行多头策略!");
-
             bullOpenStrategyService.bullBreakOpen(daily, maxOpen);
 
         }else if(filterTrend.compareTo(BigDecimal.ZERO) < 0){

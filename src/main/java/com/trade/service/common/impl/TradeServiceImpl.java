@@ -2,6 +2,7 @@ package com.trade.service.common.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
+import com.trade.config.StrategyConstantConfig;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.RecordTradeMessageService;
 import com.trade.service.common.TradeService;
@@ -29,6 +30,8 @@ public class TradeServiceImpl implements TradeService {
     private TradeConstantConfig tradeConstantConfig;
     @Autowired
     private RecordTradeMessageService recordTradeMessageService;
+    @Autowired
+    private StrategyConstantConfig strategyConstantConfig;
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
@@ -180,5 +183,31 @@ public class TradeServiceImpl implements TradeService {
         }
         return allow;
     }
+
+
+    /**
+     * 选择开仓策略编码
+     * @param strategy
+     * @return
+     */
+    @Override
+    public String selectOpenStrategy(String strategy) {
+        String s = strategyConstantConfig.getOpen_codes().get(strategy);
+        if(s != null) return s;
+        return "";
+    }
+
+    /**
+     * 选择止损策略编码
+     * @param strategy
+     * @return
+     */
+    @Override
+    public String selectCloseStrategy(String strategy) {
+        String s = strategyConstantConfig.getClose_codes().get(strategy);
+        if(s != null) return s;
+        return "";
+    }
+
 
 }

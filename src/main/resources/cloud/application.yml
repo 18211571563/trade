@@ -63,3 +63,11 @@ trade:
     "000016.SH": "上证50"
     "000300.SH": "沪深300指数"
     "000905.SH": "中证500指数"
+
+  strategy:
+    open_codes:
+      ## 突破开仓策略
+      "breakOpen": "001"
+    close_codes:
+      ## 突破止损策略
+      "breakClose": "-001"

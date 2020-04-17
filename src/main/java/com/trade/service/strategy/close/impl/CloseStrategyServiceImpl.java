@@ -1,6 +1,7 @@
 package com.trade.service.strategy.close.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.trade.config.StrategyConstantConfig;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.strategy.close.BearCloseStrategyService;
 import com.trade.service.strategy.close.BullCloseStrategyService;
@@ -36,6 +37,8 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
     private BullCloseStrategyService bullCloseStrategyService;
     @Autowired
     private TradeService tradeService;
+    @Autowired
+    private StrategyConstantConfig strategyConstantConfig;
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -44,12 +47,17 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
      * @param daily
      * @param orderVo
      */
-    public void close(DailyVo daily, OrderVo orderVo) {
+    public void close(DailyVo daily, OrderVo orderVo, String closeStrategyCode) {
         /***************************************************************** 是否容许止损 ************************************************************************/
         if(!tradeService.allowClose(daily, orderVo)) return;
 
         /***************************************************************** 止损策略逻辑 ************************************************************************/
-        this.breakClose(daily, orderVo);
+        if(tradeService.selectCloseStrategy("breakClose").equals(closeStrategyCode)){
+            this.breakClose(daily, orderVo);
+        }else{
+            throw new RuntimeException("没有可用的止损策略");
+        }
+
 
     }
 

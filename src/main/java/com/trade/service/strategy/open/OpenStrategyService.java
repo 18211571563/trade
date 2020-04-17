@@ -11,10 +11,11 @@ import com.trade.vo.OrderVo;
 public interface OpenStrategyService {
 
     /**
-     * 突破开仓策略
+     * 开仓策略
      * @param daily
      * @param orderVo
+     * @param openStrategyCode
      */
-    void open(DailyVo daily, OrderVo orderVo);
+    void open(DailyVo daily, OrderVo orderVo, String openStrategyCode);
 
 }

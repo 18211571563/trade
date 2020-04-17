@@ -52,6 +52,8 @@ public class StrategyServiceImpl implements StrategyService {
     private int breakOpenDay;
     private int breakCloseDay;
     private int filterDay;
+    private String openStrategyCode;
+    private String closeStrategyCode;
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -78,6 +80,8 @@ public class StrategyServiceImpl implements StrategyService {
         capitalManager.init();
 
         /** 初始化参数 **/
+        this.openStrategyCode = tradeConstantConfig.getOpenStrategyCode();
+        this.closeStrategyCode = tradeConstantConfig.getCloseStrategyCode();
         this.tsCodes = tradeConstantConfig.getTsCodes();
         this.all = tradeConstantConfig.getUsedAll();
         this.isUsedCapitail = tradeConstantConfig.getUsedCapitail();
@@ -90,6 +94,7 @@ public class StrategyServiceImpl implements StrategyService {
         this.breakOpenDay = tradeConstantConfig.getBreakOpenDay();
         this.breakCloseDay = tradeConstantConfig.getBreakCloseDay();
         this.filterDay = tradeConstantConfig.getFilterDay();
+
     }
 
     /**
@@ -109,7 +114,9 @@ public class StrategyServiceImpl implements StrategyService {
         if(all != null) this.all = all;
         if(StringUtils.isNotBlank(tsCodes)) this.tsCodes = tsCodes.split(",");
         Date date = new Date();
-        process();
+
+        this.process();
+
         logger.info(String.format("总耗时：%s", String.valueOf((new Date().getTime() - date.getTime()) / 1000 )) );
 
         return MDC.get("traceId");
@@ -198,10 +205,10 @@ public class StrategyServiceImpl implements StrategyService {
         OrderVo orderVo = tradeService.getOrderVo(tsCode);
 
         /***************************************************************** 开仓 ************************************************************************/
-        openStrategyService.open(daily, orderVo);
+        openStrategyService.open(daily, orderVo,  openStrategyCode);
 
         /***************************************************************** 止损 ************************************************************************/
-        closeStrategyService.close(daily, orderVo);
+        closeStrategyService.close(daily, orderVo, closeStrategyCode);
 
         /***************************************************************** 滤镜 ************************************************************************/
         // 滤镜: 判断当前的开仓信号是否与长期趋势背离，如背离，终止交易

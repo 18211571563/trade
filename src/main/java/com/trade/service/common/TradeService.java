@@ -34,4 +34,8 @@ public interface TradeService {
     Boolean allowOpen(DailyVo daily, OrderVo orderVo);
 
     Boolean allowClose(DailyVo daily, OrderVo orderVo);
+
+    String selectOpenStrategy(String strategy);
+
+    String selectCloseStrategy(String strategy);
 }

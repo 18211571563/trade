@@ -11,9 +11,9 @@ import com.trade.vo.OrderVo;
 public interface CloseStrategyService {
 
     /**
-     * 突破止损策略
+     * 止损策略
      * @param daily
      * @param orderVo
      */
-    void close(DailyVo daily, OrderVo orderVo);
+    void close(DailyVo daily, OrderVo orderVo, String closeStrategyCode);
 }
