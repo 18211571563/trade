@@ -45,7 +45,7 @@ public class BearOpenStrategyServiceImpl implements BearOpenStrategyService {
         if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minOpen.getClose())) < 0){
             // 计算交易量
             BigDecimal atr = calculateService.getDailyAverageAtr(tsCode, date, tradeConstantConfig.getAtrPeriod()); // 获取今日 ATR
-            int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), atr, tradeConstantConfig.getUnit());
+            int tradeVolume = CapitalUtil.getTradeVolume(tradeService.getTotalCapital(), tradeService.getRiskParameter(), BigDecimal.valueOf(tradeConstantConfig.getCloseDeep()), atr, tradeConstantConfig.getUnit());
 
             OrderVo tradeOrderVo = new OrderVo(daily.getTs_code(),
                     0,

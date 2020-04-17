@@ -75,6 +75,10 @@ public class TradeConstantConfig {
     @Value("${trade.constant.riskParameter}")
     private Integer riskParameter;
 
+    /** 止损深度， 在 R 恒定的情况下，深度越深，持有量越少 **/
+    @Value("${trade.constant.closeDeep}")
+    private Integer closeDeep;
+
     public String getOpenStrategyCode() {
         return openStrategyCode;
     }
@@ -201,5 +205,13 @@ public class TradeConstantConfig {
 
     public void setRiskParameter(Integer riskParameter) {
         this.riskParameter = riskParameter;
+    }
+
+    public Integer getCloseDeep() {
+        return closeDeep;
+    }
+
+    public void setCloseDeep(Integer closeDeep) {
+        this.closeDeep = closeDeep;
     }
 }

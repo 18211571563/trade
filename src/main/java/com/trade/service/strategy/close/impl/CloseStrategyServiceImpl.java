@@ -62,7 +62,7 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
     }
 
     /**
-     * 突破止损策略
+     * 突破 策略
      * @param daily
      * @param orderVo
      */
@@ -79,6 +79,19 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
             bullCloseStrategyService.bullBreakClose(daily, minClose, orderVo);
 
         }
+    }
+
+    /**
+     * 突破波动率(R) 策略
+     * @param daily
+     * @param orderVo
+     */
+    private void breakRClose(DailyVo daily, OrderVo orderVo) {
+        /** ################################## 计算 多空 止损价格 ##################################### **/
+
+
+
+
     }
 
 }

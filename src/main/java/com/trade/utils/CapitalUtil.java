@@ -117,13 +117,14 @@ public class CapitalUtil {
      * 获取容许交易量（手）
      * @param totalCapital 总资金
      * @param riskParameter 风险系数
+     * @param closeDeep 止损深度
      * @param atr   真实波动幅度
      * @param unit  交易单元，如一手100
      * @return
      */
-    public static int getTradeVolume(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal atr, int unit){
+    public static int getTradeVolume(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal closeDeep, BigDecimal atr, int unit){
         BigDecimal tradeCapital = CapitalUtil.getTradeCapital(totalCapital, riskParameter);
-        return tradeCapital.divide(atr.multiply(BigDecimal.valueOf(unit)), 0, BigDecimal.ROUND_DOWN).intValue();
+        return tradeCapital.divide(atr.multiply(closeDeep).multiply(BigDecimal.valueOf(unit)), 0, BigDecimal.ROUND_DOWN).intValue();
     }
 
     /**

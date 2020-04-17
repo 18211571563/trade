@@ -68,7 +68,7 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
     }
 
     /**
-     * 突破开仓策略
+     * 突破 策略
      * @param daily
      * @param filterTrend
      */
@@ -93,23 +93,12 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
     }
 
     /**
-     * 突破波动率(R)开仓策略
+     * 突破波动率(R) 策略
      * @param daily
      * @param orderVo
      */
     private void breakROpen(DailyVo daily, OrderVo orderVo) {
-        String tsCode = daily.getTs_code();
-        String date = daily.getTrade_date();
 
-
-
-        // 判断是否持仓
-        Boolean isHoldPosition = tradeService.isHoldPosition(orderVo);
-        if(!isHoldPosition) { // 空仓
-
-        }else{
-            logger.info("已经存在仓位无需交易, 交易日:{}, 数据:{}" ,date , JSON.toJSONString(daily));
-        }
 
     }
 
