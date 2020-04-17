@@ -1,6 +1,7 @@
 package com.trade.controller;
 
 
+import com.trade.config.TradeConstantConfig;
 import com.trade.service.strategy.StrategyService;
 import com.trade.utils.TimeUtil;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -59,6 +61,12 @@ public class StrategyController {
                           @PathVariable Boolean all,
                           @PathVariable String tsCodes) throws InterruptedException {
         return strategyService.process(startDate, endDate, today, all, tsCodes);
+    }
+
+    @GetMapping(value = "config")
+    public String config(TradeConstantConfig tradeConstantConfig) throws InvocationTargetException, IllegalAccessException {
+        strategyService.updateConfig(tradeConstantConfig);
+        return "success";
     }
 
 }

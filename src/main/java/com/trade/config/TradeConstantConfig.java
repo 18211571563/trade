@@ -45,35 +45,35 @@ public class TradeConstantConfig {
 
     /** 交易单元 **/
     @Value("${trade.constant.unit}")
-    private int unit;
+    private Integer unit;
 
     /** ART平均值 **/
     @Value("${trade.constant.atrPeriod}")
-    private int atrPeriod;
+    private Integer atrPeriod;
 
     /** 突破开盘价平均值 **/
     @Value("${trade.constant.breakOpenDay}")
-    private int breakOpenDay;
+    private Integer breakOpenDay;
 
     /** 突破止损价平均值 **/
     @Value("${trade.constant.breakCloseDay}")
-    private int breakCloseDay;
+    private Integer breakCloseDay;
 
     /** 大趋势过滤线平均值 **/
     @Value("${trade.constant.filterDay}")
-    private int filterDay;
+    private Integer filterDay;
 
     /** 个人主观市场趋势偏移量 -1 ~ 1 ， -1 看空只做空， 1 看多只做多 **/
     @Value("${trade.constant.marketTrendOffset}")
-    private int marketTrendOffset;
+    private Integer marketTrendOffset;
 
     /** 总资金 **/
     @Value("${trade.constant.totalCapital}")
-    private int totalCapital;
+    private Integer totalCapital;
 
     /** 风险系数 **/
     @Value("${trade.constant.riskParameter}")
-    private int riskParameter;
+    private Integer riskParameter;
 
     public String getOpenStrategyCode() {
         return openStrategyCode;
@@ -139,67 +139,67 @@ public class TradeConstantConfig {
         this.endDate = endDate;
     }
 
-    public int getUnit() {
+    public Integer getUnit() {
         return unit;
     }
 
-    public void setUnit(int unit) {
+    public void setUnit(Integer unit) {
         this.unit = unit;
     }
 
-    public int getAtrPeriod() {
+    public Integer getAtrPeriod() {
         return atrPeriod;
     }
 
-    public void setAtrPeriod(int atrPeriod) {
+    public void setAtrPeriod(Integer atrPeriod) {
         this.atrPeriod = atrPeriod;
     }
 
-    public int getBreakOpenDay() {
+    public Integer getBreakOpenDay() {
         return breakOpenDay;
     }
 
-    public void setBreakOpenDay(int breakOpenDay) {
+    public void setBreakOpenDay(Integer breakOpenDay) {
         this.breakOpenDay = breakOpenDay;
     }
 
-    public int getBreakCloseDay() {
+    public Integer getBreakCloseDay() {
         return breakCloseDay;
     }
 
-    public void setBreakCloseDay(int breakCloseDay) {
+    public void setBreakCloseDay(Integer breakCloseDay) {
         this.breakCloseDay = breakCloseDay;
     }
 
-    public int getFilterDay() {
+    public Integer getFilterDay() {
         return filterDay;
     }
 
-    public void setFilterDay(int filterDay) {
+    public void setFilterDay(Integer filterDay) {
         this.filterDay = filterDay;
     }
 
-    public int getMarketTrendOffset() {
+    public Integer getMarketTrendOffset() {
         return marketTrendOffset;
     }
 
-    public void setMarketTrendOffset(int marketTrendOffset) {
+    public void setMarketTrendOffset(Integer marketTrendOffset) {
         this.marketTrendOffset = marketTrendOffset;
     }
 
-    public int getTotalCapital() {
+    public Integer getTotalCapital() {
         return totalCapital;
     }
 
-    public void setTotalCapital(int totalCapital) {
+    public void setTotalCapital(Integer totalCapital) {
         this.totalCapital = totalCapital;
     }
 
-    public int getRiskParameter() {
+    public Integer getRiskParameter() {
         return riskParameter;
     }
 
-    public void setRiskParameter(int riskParameter) {
+    public void setRiskParameter(Integer riskParameter) {
         this.riskParameter = riskParameter;
     }
 }

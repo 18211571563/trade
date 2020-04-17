@@ -1,6 +1,5 @@
 package com.trade.service.strategy;
 
-import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.DataService;
@@ -8,20 +7,21 @@ import com.trade.service.common.RecordTradeMessageService;
 import com.trade.service.common.TradeService;
 import com.trade.service.strategy.close.CloseStrategyService;
 import com.trade.service.strategy.open.OpenStrategyService;
-import com.trade.service.strategy.StrategyService;
+import com.trade.utils.CommonUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
-import com.trade.vo.OrderBPVo;
 import com.trade.vo.OrderVo;
 import com.trade.vo.StockBasicVo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -72,30 +72,7 @@ public class StrategyServiceImpl implements StrategyService {
     @Autowired
     private RecordTradeMessageService recordTradeMessageService;
 
-    /**
-     * 初始化启动项
-     */
-    private void init(){
-        /** 初始化资金管理 **/
-        capitalManager.init();
-
-        /** 初始化参数 **/
-        this.openStrategyCode = tradeConstantConfig.getOpenStrategyCode();
-        this.closeStrategyCode = tradeConstantConfig.getCloseStrategyCode();
-        this.tsCodes = tradeConstantConfig.getTsCodes();
-        this.all = tradeConstantConfig.getUsedAll();
-        this.isUsedCapitail = tradeConstantConfig.getUsedCapitail();
-        this.unit = tradeConstantConfig.getUnit();
-        this.today = tradeConstantConfig.getToday();
-        this.startDate = tradeConstantConfig.getStartDate();
-        this.endDate = tradeConstantConfig.getEndDate();
-
-        this.atrPeriod = tradeConstantConfig.getAtrPeriod();
-        this.breakOpenDay = tradeConstantConfig.getBreakOpenDay();
-        this.breakCloseDay = tradeConstantConfig.getBreakCloseDay();
-        this.filterDay = tradeConstantConfig.getFilterDay();
-
-    }
+    /** ################################################### public ########################################################################################## **/
 
     /**
      * 初始化配置 + 启动多线程执行任务
@@ -122,6 +99,13 @@ public class StrategyServiceImpl implements StrategyService {
         return MDC.get("traceId");
     }
 
+    @Override
+    public void updateConfig(TradeConstantConfig config) throws InvocationTargetException, IllegalAccessException {
+        BeanUtils.copyProperties(config, tradeConstantConfig, CommonUtil.getNullPropertyNames(config));
+    }
+
+
+    /** ################################################### private ########################################################################################## **/
 
     /**
      * 启动多线程运行任务
@@ -188,7 +172,6 @@ public class StrategyServiceImpl implements StrategyService {
     }
 
 
-
     /**
      * 执行 标的 + 某一天 任务
      * @param tsCode
@@ -214,9 +197,33 @@ public class StrategyServiceImpl implements StrategyService {
         // 滤镜: 判断当前的开仓信号是否与长期趋势背离，如背离，终止交易
 
 
-
     }
 
+
+    /**
+     * 初始化启动项
+     */
+    private void init(){
+        /** 初始化资金管理 **/
+        capitalManager.init();
+
+        /** 初始化参数 **/
+        this.openStrategyCode = tradeConstantConfig.getOpenStrategyCode();
+        this.closeStrategyCode = tradeConstantConfig.getCloseStrategyCode();
+        this.tsCodes = tradeConstantConfig.getTsCodes();
+        this.all = tradeConstantConfig.getUsedAll();
+        this.isUsedCapitail = tradeConstantConfig.getUsedCapitail();
+        this.unit = tradeConstantConfig.getUnit();
+        this.today = tradeConstantConfig.getToday();
+        this.startDate = tradeConstantConfig.getStartDate();
+        this.endDate = tradeConstantConfig.getEndDate();
+
+        this.atrPeriod = tradeConstantConfig.getAtrPeriod();
+        this.breakOpenDay = tradeConstantConfig.getBreakOpenDay();
+        this.breakCloseDay = tradeConstantConfig.getBreakCloseDay();
+        this.filterDay = tradeConstantConfig.getFilterDay();
+
+    }
 
 
 }
