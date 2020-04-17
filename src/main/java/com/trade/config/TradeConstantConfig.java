@@ -47,19 +47,19 @@ public class TradeConstantConfig {
     @Value("${trade.constant.unit}")
     private Integer unit;
 
-    /** ART平均值 **/
+    /** ART平均天数 **/
     @Value("${trade.constant.atrPeriod}")
     private Integer atrPeriod;
 
-    /** 突破开盘价平均值 **/
+    /** 突破策略-突破达到对应天数均值进行开仓 **/
     @Value("${trade.constant.breakOpenDay}")
     private Integer breakOpenDay;
 
-    /** 突破止损价平均值 **/
+    /** 突破策略-突破达到对应天数均值进行止损 **/
     @Value("${trade.constant.breakCloseDay}")
     private Integer breakCloseDay;
 
-    /** 大趋势过滤线平均值 **/
+    /** 大趋势过滤线平均天数 **/
     @Value("${trade.constant.filterDay}")
     private Integer filterDay;
 
