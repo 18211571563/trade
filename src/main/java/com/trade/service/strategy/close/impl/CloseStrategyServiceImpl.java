@@ -3,12 +3,14 @@ package com.trade.service.strategy.close.impl;
 import com.alibaba.fastjson.JSON;
 import com.trade.config.StrategyConstantConfig;
 import com.trade.config.TradeConstantConfig;
+import com.trade.service.common.CalculateService;
 import com.trade.service.strategy.close.BearCloseStrategyService;
 import com.trade.service.strategy.close.BullCloseStrategyService;
 import com.trade.service.strategy.close.CloseStrategyService;
 import com.trade.service.common.DataService;
 import com.trade.service.common.TradeService;
 import com.trade.utils.CapitalUtil;
+import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
@@ -37,10 +39,11 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
     private BullCloseStrategyService bullCloseStrategyService;
     @Autowired
     private TradeService tradeService;
-    @Autowired
-    private StrategyConstantConfig strategyConstantConfig;
 
     Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private CalculateService calculateService;
 
     /**
      * 止损策略
@@ -53,7 +56,11 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
 
         /***************************************************************** 止损策略逻辑 ************************************************************************/
         if(tradeService.selectCloseStrategy("breakClose").equals(closeStrategyCode)){
+            // 突破 策略
             this.breakClose(daily, orderVo);
+        }if(tradeService.selectCloseStrategy("breakRClose").equals(closeStrategyCode)){
+            // 突破波动率(R) 策略
+            this.breakRClose(daily, orderVo);
         }else{
             throw new RuntimeException("没有可用的止损策略");
         }
@@ -67,16 +74,17 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
      * @param orderVo
      */
     private void breakClose(DailyVo daily, OrderVo orderVo) {
-        // 计算突破点
+        /** ################################## 计算突破价格 ##################################### **/
         List<DailyVo> breakCloseDailyVo = dataService.daily(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getBreakCloseDay());
         DailyVo maxClose = CapitalUtil.getMax(breakCloseDailyVo);
         DailyVo minClose = CapitalUtil.getMin(breakCloseDailyVo);
 
+        /** ################################## 止损 ##################################### **/
         if(orderVo.getDirection() == 0){ // 空头止损
-            bearCloseStrategyService.bearBreakClose(daily, maxClose, orderVo);
+            bearCloseStrategyService.bearBreakClose(daily, orderVo, maxClose);
 
         }else if(orderVo.getDirection() == 1){ // 多头止损
-            bullCloseStrategyService.bullBreakClose(daily, minClose, orderVo);
+            bullCloseStrategyService.bullBreakClose(daily, orderVo, minClose);
 
         }
     }
@@ -88,8 +96,24 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
      */
     private void breakRClose(DailyVo daily, OrderVo orderVo) {
         /** ################################## 计算 多空 止损价格 ##################################### **/
+        // 计算ATR
+        BigDecimal atr = calculateService.getDailyAverageAtr(orderVo.getTsCode(), orderVo.getTime().toLocalDate().format(TimeUtil.SHORT_DATE_FORMATTER), tradeConstantConfig.getAtrPeriod()); // 获取今日 ATR
+        // 计算R = atr * closeDeep
+        BigDecimal R = atr.multiply(BigDecimal.valueOf(tradeConstantConfig.getCloseDeep())).setScale(2, BigDecimal.ROUND_HALF_UP);
 
+        // 空头止损价
+        BigDecimal bearClosePrice = orderVo.getPrice().add(R);
+        // 多头止损价
+        BigDecimal bullClosePrice = orderVo.getPrice().subtract(R);
 
+        /** ################################## 止损 ##################################### **/
+        if(orderVo.getDirection() == 0){ // 空头止损
+            bearCloseStrategyService.bearBreakRClose(daily, orderVo, bearClosePrice);
+
+        }else if(orderVo.getDirection() == 1){ // 多头止损
+            bullCloseStrategyService.bullBreakRClose(daily, orderVo, bullClosePrice);
+
+        }
 
 
     }

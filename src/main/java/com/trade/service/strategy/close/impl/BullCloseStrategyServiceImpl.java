@@ -23,21 +23,26 @@ import java.math.BigDecimal;
 public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
 
     @Autowired
-    private TradeConstantConfig tradeConstantConfig;
-    @Autowired
     private TradeService tradeService;
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void bullBreakClose(DailyVo daily, DailyVo minClose, OrderVo orderVo){
-
+    public void bullBreakClose(DailyVo daily, OrderVo orderVo, DailyVo minClose){
         // 判断是否持有多头头寸
         if(orderVo != null && orderVo.getDirection() == 1){
-
-            // 判断是否当前价小于突破价，如果是，进行平多操作
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minClose.getClose())) < 0){
-                tradeService.close(daily, orderVo, tradeConstantConfig.getUsedCapitail());
+                tradeService.close(daily, orderVo);
+            }
+        }
+    }
+
+    @Override
+    public void bullBreakRClose(DailyVo daily, OrderVo orderVo, BigDecimal bullClosePrice) {
+        // 判断是否持有多头头寸
+        if(orderVo != null && orderVo.getDirection() == 1){
+            if(new BigDecimal(daily.getClose()).compareTo(bullClosePrice) < 0) {
+                tradeService.close(daily, orderVo);
             }
         }
     }

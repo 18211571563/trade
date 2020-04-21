@@ -30,14 +30,21 @@ public class BearCloseStrategyServiceImpl implements BearCloseStrategyService {
     Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void bearBreakClose(DailyVo daily, DailyVo maxClose, OrderVo orderVo){
-
+    public void bearBreakClose(DailyVo daily, OrderVo orderVo, DailyVo maxClose){
         // 判断是否持有空头头寸
         if(orderVo != null && orderVo.getDirection() == 0){
-
-            // 判断是否当前价大于突破价，如果是，进行平空操作
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxClose.getClose())) > 0){
-                tradeService.close(daily, orderVo, tradeConstantConfig.getUsedCapitail());
+                tradeService.close(daily, orderVo);
+            }
+        }
+    }
+
+    @Override
+    public void bearBreakRClose(DailyVo daily, OrderVo orderVo, BigDecimal bearClosePrice) {
+        // 判断是否持有空头头寸
+        if(orderVo != null && orderVo.getDirection() == 0){
+            if(new BigDecimal(daily.getClose()).compareTo(bearClosePrice) > 0){
+                tradeService.close(daily, orderVo);
             }
         }
     }

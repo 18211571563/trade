@@ -37,40 +37,40 @@ public class TradeServiceImpl implements TradeService {
     Logger tradeLogger = LoggerFactory.getLogger("trade");
 
     @Override
-    public synchronized void open(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail) {
-        // 判断现在的可用资金是否满足 订单金额
-        if(isUsedCapitail && CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
-            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
-            return;
-        }
+    public synchronized void open(DailyVo daily, OrderVo orderVo) {
 
         // 开仓 - 保存订单
         CapitalManager.tradeOrders.add(orderVo);
-        // 冻结金额
-        if(isUsedCapitail){
+        // 记录交易日志
+        recordTradeMessageService.logOpen(daily, orderVo);
+
+
+        // 资金控制 - 判断现在的可用资金是否满足订单金额 并且 冻结金额
+        if(tradeConstantConfig.getUsedCapitail()){
+            if(CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
+                tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+                return;
+            }
             this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
         }
 
-        // 记录交易日志
-        recordTradeMessageService.logOpen(daily, orderVo);
     }
 
 
     @Override
-    public synchronized void close(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail) {
+    public synchronized void close(DailyVo daily, OrderVo orderVo) {
 
         // 移除仓位
         CapitalManager.tradeOrders.remove(orderVo);
+        // 记录交易日志
+        recordTradeMessageService.logClose(daily, orderVo);
 
         // 核算资金
-        if(isUsedCapitail){
+        if(tradeConstantConfig.getUsedCapitail()){
             BigDecimal bp = CapitalUtil.calcBp(daily, orderVo);
             this.calTotalCapital(bp); // 核算总资金
             this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate()); // 释放锁定资金
         }
-
-        // 记录交易日志
-        recordTradeMessageService.logClose(daily, orderVo);
     }
 
 

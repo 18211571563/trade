@@ -53,7 +53,7 @@ public class BullOpenStrategyServiceImpl implements BullOpenStrategyService {
                     new BigDecimal(daily.getClose()),
                     BigDecimal.valueOf(tradeVolume * tradeConstantConfig.getUnit()),
                     LocalDateTime.now());
-            tradeService.open(daily, tradeOrderVo, tradeConstantConfig.getUsedCapitail());
+            tradeService.open(daily, tradeOrderVo);
 
         }
     }

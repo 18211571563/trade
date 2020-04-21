@@ -52,7 +52,7 @@ public class BearOpenStrategyServiceImpl implements BearOpenStrategyService {
                     new BigDecimal(daily.getClose()),
                     BigDecimal.valueOf(tradeVolume * tradeConstantConfig.getUnit()),
                     LocalDateTime.now());
-            tradeService.open(daily, tradeOrderVo, tradeConstantConfig.getUsedCapitail());
+            tradeService.open(daily, tradeOrderVo);
         }
     }
 

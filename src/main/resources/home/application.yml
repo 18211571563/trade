@@ -66,8 +66,10 @@ trade:
 
   strategy:
     open_codes:
-      ## 突破开仓策略
+      ## 突破 开仓策略
       "breakOpen": "001"
     close_codes:
-      ## 突破止损策略
+      ## 突破 止损策略
       "breakClose": "-001"
+      ## 突破波动率(R) 止损策略
+      "breakRClose": "-002"

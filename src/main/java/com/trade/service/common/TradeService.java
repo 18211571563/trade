@@ -15,9 +15,9 @@ import java.util.List;
  */
 public interface TradeService {
 
-    void open(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail);
+    void open(DailyVo daily, OrderVo orderVo);
 
-    void close(DailyVo daily, OrderVo orderVo, boolean isUsedCapitail);
+    void close(DailyVo daily, OrderVo orderVo);
 
     OrderVo getOrderVo(String tsCode);
 
