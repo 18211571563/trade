@@ -179,12 +179,12 @@ public class StrategyServiceImpl implements StrategyService {
      */
     private void process(String tsCode, String date){
 
-        // 获取今日行情
+        /************************************************************** 获取今日行情 ***********************************************************************/
         List<DailyVo> dailys = dataService.daily(tsCode, date, date);
         if(dailys == null || dailys.size() == 0) return;
         DailyVo daily = dailys.get(0);
 
-        // 获取仓位信息
+        /************************************************************** 获取仓位信息 ***********************************************************************/
         OrderVo orderVo = tradeService.getOrderVo(tsCode);
 
         /***************************************************************** 开仓 ************************************************************************/

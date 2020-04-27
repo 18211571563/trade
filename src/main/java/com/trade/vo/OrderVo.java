@@ -1,6 +1,7 @@
 package com.trade.vo;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -14,7 +15,7 @@ public class OrderVo {
         super();
     }
 
-    public OrderVo(String tsCode, int direction, BigDecimal price, BigDecimal volume, LocalDateTime time ){
+    public OrderVo(String tsCode, int direction, BigDecimal price, BigDecimal volume, LocalDate time ){
         super();
         this.tsCode = tsCode;
         this.direction = direction;
@@ -27,7 +28,7 @@ public class OrderVo {
     private int direction; // 0: 空， 1: 多
     private BigDecimal price;
     private BigDecimal volume;
-    private LocalDateTime time;
+    private LocalDate time;
 
     public int getDirection() {
         return direction;
@@ -61,11 +62,11 @@ public class OrderVo {
         this.volume = volume;
     }
 
-    public LocalDateTime getTime() {
+    public LocalDate getTime() {
         return time;
     }
 
-    public void setTime(LocalDateTime time) {
+    public void setTime(LocalDate time) {
         this.time = time;
     }
 }

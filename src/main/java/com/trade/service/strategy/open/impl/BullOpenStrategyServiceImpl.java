@@ -7,6 +7,7 @@ import com.trade.service.common.DataService;
 import com.trade.service.common.TradeService;
 import com.trade.service.strategy.open.BullOpenStrategyService;
 import com.trade.utils.CapitalUtil;
+import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -52,7 +54,7 @@ public class BullOpenStrategyServiceImpl implements BullOpenStrategyService {
                     1,
                     new BigDecimal(daily.getClose()),
                     BigDecimal.valueOf(tradeVolume * tradeConstantConfig.getUnit()),
-                    LocalDateTime.now());
+                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER));
             tradeService.open(daily, tradeOrderVo);
 
         }

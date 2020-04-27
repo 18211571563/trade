@@ -77,6 +77,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
 
         assetLogger.info("########################### {} ###############################", tsCode);
         List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(tsCode);
+        if(orderBPVos == null) return;
         for (OrderBPVo orderBPVo : orderBPVos) {
             String direction  = orderBPVo.getDirection() == 1? "多头":((orderBPVo.getDirection() == 0)? "空头":"未知") ;
             assetLogger.info("交易流水 - 方向:{}, bp:{}, bp比率:{}, 开仓价:{}, 止损价:{}, 交易量:{}, 交易时间:{} ",

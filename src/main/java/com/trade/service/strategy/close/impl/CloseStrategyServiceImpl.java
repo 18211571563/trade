@@ -96,21 +96,34 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
      */
     private void breakRClose(DailyVo daily, OrderVo orderVo) {
         /** ################################## 计算 多空 止损价格 ##################################### **/
-        // 计算ATR
-        BigDecimal atr = calculateService.getDailyAverageAtr(orderVo.getTsCode(), orderVo.getTime().toLocalDate().format(TimeUtil.SHORT_DATE_FORMATTER), tradeConstantConfig.getAtrPeriod()); // 获取今日 ATR
-        // 计算R = atr * closeDeep
-        BigDecimal R = atr.multiply(BigDecimal.valueOf(tradeConstantConfig.getCloseDeep())).setScale(2, BigDecimal.ROUND_HALF_UP);
+        /** 计算R **/
+        BigDecimal R = null;
+        {
+            // 计算ATR
+            BigDecimal atr = calculateService.getDailyAverageAtr(orderVo.getTsCode(), orderVo.getTime().format(TimeUtil.SHORT_DATE_FORMATTER), tradeConstantConfig.getAtrPeriod()); // 获取今日 ATR
+            // 计算R = atr * closeDeep
+            R = atr.multiply(BigDecimal.valueOf(tradeConstantConfig.getCloseDeep())).setScale(2, BigDecimal.ROUND_HALF_UP);
 
-        // 空头止损价
-        BigDecimal bearClosePrice = orderVo.getPrice().add(R);
-        // 多头止损价
-        BigDecimal bullClosePrice = orderVo.getPrice().subtract(R);
+        }
+
+        /** 获取开仓时间到目前时间的信息 **/
+        List<DailyVo> dailyTradeRecords = dataService.daily(orderVo.getTsCode(), orderVo.getTime().format(TimeUtil.SHORT_DATE_FORMATTER), daily.getTrade_date());
 
         /** ################################## 止损 ##################################### **/
         if(orderVo.getDirection() == 0){ // 空头止损
+            // 计算开仓时间到目前时间的最低价
+            DailyVo minClose = CapitalUtil.getMin(dailyTradeRecords);
+            // 空头止损价
+            BigDecimal bearClosePrice = new BigDecimal(minClose.getClose()).add(R);
+
             bearCloseStrategyService.bearBreakRClose(daily, orderVo, bearClosePrice);
 
         }else if(orderVo.getDirection() == 1){ // 多头止损
+            // 计算开仓时间到目前时间的最高价
+            DailyVo maxClose = CapitalUtil.getMax(dailyTradeRecords);
+            // 多头止损价
+            BigDecimal bullClosePrice = new BigDecimal(maxClose.getClose()).subtract(R);
+
             bullCloseStrategyService.bullBreakRClose(daily, orderVo, bullClosePrice);
 
         }
