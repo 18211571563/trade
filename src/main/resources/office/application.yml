@@ -3,7 +3,7 @@ spring:
     name: trade
   redis:
     database: 1
-    host: 118.89.203.94
+    host: localhost
     port: 6379
     timeout: 2000
     jedis:
@@ -38,10 +38,38 @@ http:
 message:
   url: http://10.73.129.226:3000/
   service:
-    daily: /pro_bar/E/<ts_code>/<start_date>/<end_date>
+    daily: /pro_bar/<asset>/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
     stock_basic: /stock_basic
+    index_basic: /index_basic/<market>
 
 ##日志文件配置
 logging:
   config: classpath:logback.xml
+
+## 指数 - 市场说明(market)
+trade:
+  index_basic_markets:
+    MSCI: "MSCI指数"
+    CSI: "中证指数"
+    SSE: "上交所指数"
+    SZSE: "深交所指数"
+    CICC: "中金指数"
+    SW: "申万指数"
+    OTH: "其他指数"
+  used_index_basic_tsCodes:
+    "000001.SH": "上证指数"
+    "399001.SZ": "深证成指"
+    "000016.SH": "上证50"
+    "000300.SH": "沪深300指数"
+    "000905.SH": "中证500指数"
+
+  strategy:
+    open_codes:
+      ## 突破 开仓策略
+      "breakOpen": "001"
+    close_codes:
+      ## 突破 止损策略
+      "breakClose": "-001"
+      ## 突破波动率(R) 止损策略
+      "breakRClose": "-002"
