@@ -15,7 +15,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/trade
+      uri: mongodb://trade:Asd8905047@localhost:27017/trade
 
 
 
