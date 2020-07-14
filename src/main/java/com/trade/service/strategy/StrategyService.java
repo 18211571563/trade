@@ -15,5 +15,5 @@ public interface StrategyService {
 
     void updateConfig(TradeConstantConfig tradeConstantConfig) throws InvocationTargetException, IllegalAccessException;
 
-
+    String getConfig() throws InvocationTargetException, IllegalAccessException;
 }

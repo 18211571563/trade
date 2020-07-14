@@ -63,10 +63,15 @@ public class StrategyController {
         return strategyService.process(startDate, endDate, today, all, tsCodes);
     }
 
-    @GetMapping(value = "config")
-    public String config(TradeConstantConfig tradeConstantConfig) throws InvocationTargetException, IllegalAccessException {
+    @GetMapping(value = "config/update")
+    public String updateConfig(TradeConstantConfig tradeConstantConfig) throws InvocationTargetException, IllegalAccessException {
         strategyService.updateConfig(tradeConstantConfig);
         return "success";
+    }
+
+    @GetMapping(value = "config/get")
+    public String getConfig() throws InvocationTargetException, IllegalAccessException {
+        return strategyService.getConfig();
     }
 
 }

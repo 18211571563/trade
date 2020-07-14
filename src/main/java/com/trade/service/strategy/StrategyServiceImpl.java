@@ -1,5 +1,6 @@
 package com.trade.service.strategy;
 
+import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.DataService;
@@ -95,6 +96,11 @@ public class StrategyServiceImpl implements StrategyService {
     @Override
     public void updateConfig(TradeConstantConfig config) throws InvocationTargetException, IllegalAccessException {
         BeanUtils.copyProperties(config, tradeConstantConfig, CommonUtil.getNullPropertyNames(config));
+    }
+
+    @Override
+    public String getConfig() throws InvocationTargetException, IllegalAccessException {
+        return JSON.toJSONString(tradeConstantConfig);
     }
 
 
