@@ -1,4 +1,4 @@
-package com.trade.service.strategy;
+package com.trade.service.strategy.process;
 
 import com.trade.config.TradeConstantConfig;
 

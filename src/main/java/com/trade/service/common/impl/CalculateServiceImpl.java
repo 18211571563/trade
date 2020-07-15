@@ -44,8 +44,13 @@ public class CalculateServiceImpl implements CalculateService {
         // 获取计算ATR所需的前置 atrPeriod 天数据
         List<DailyVo> getCalculateAtrDailyVos = this.getCalculateAtrDailyVos(tsCode, date, atrPeriod); // 有 atrPeriod  + 1 条数据
         // 计算今日 ATR
-        BigDecimal dailyAtr = CapitalUtil.getDailyAtr(getCalculateAtrDailyVos);
-        return dailyAtr;
+        try {
+            BigDecimal dailyAtr = CapitalUtil.getDailyAtr(getCalculateAtrDailyVos);
+            return dailyAtr;
+        }catch (Exception e){
+            throw e;
+        }
+
     }
 
     /**

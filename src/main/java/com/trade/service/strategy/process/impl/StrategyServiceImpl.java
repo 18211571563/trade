@@ -1,33 +1,39 @@
-package com.trade.service.strategy;
+package com.trade.service.strategy.process.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
+import com.trade.memory_storage.MemoryStorage;
 import com.trade.service.common.DataService;
 import com.trade.service.common.RecordTradeMessageService;
 import com.trade.service.common.TradeService;
 import com.trade.service.strategy.close.CloseStrategyService;
 import com.trade.service.strategy.open.OpenStrategyService;
+import com.trade.service.strategy.process.StrategyService;
 import com.trade.utils.CommonUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import com.trade.vo.StockBasicVo;
+import com.trade.vo.TradeDateVo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * @Author georgy
@@ -37,10 +43,8 @@ import java.util.concurrent.Executors;
 @Service
 public class StrategyServiceImpl implements StrategyService {
 
-    /** 线程数量 **/
-    @Value("${trade.constant.threadCount}")
-    private int threadCount;
 
+    private int threadCount;
     private String[] tsCodes;
     private Boolean all;
     private Boolean isUsedCapitail;
@@ -54,6 +58,7 @@ public class StrategyServiceImpl implements StrategyService {
     private int filterDay;
     private String openStrategyCode;
     private String closeStrategyCode;
+    private int offset;
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -61,6 +66,9 @@ public class StrategyServiceImpl implements StrategyService {
     private TradeConstantConfig tradeConstantConfig;
     @Autowired
     private DataService dataService;
+    @Autowired
+    @Qualifier("mongoDataServiceImpl")
+    private DataService mongodbDataService;
     @Autowired
     private TradeService tradeService;
     @Autowired
@@ -88,7 +96,7 @@ public class StrategyServiceImpl implements StrategyService {
 
         Date date = new Date();
         this.process();
-        logger.info(String.format("总耗时：%s", String.valueOf((new Date().getTime() - date.getTime()) / 1000 )) );
+        logger.info(String.format("总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
 
         return MDC.get("traceId");
     }
@@ -117,9 +125,30 @@ public class StrategyServiceImpl implements StrategyService {
         ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
             executor.execute(() -> {
+
+                // 初始化 MemoryStorage 到本地线程
+                ThreadLocal<MemoryStorage> memoryStorageThreadLocal = MemoryStorage.memoryStorageThreadLocal;
+                MemoryStorage memoryStorage = new MemoryStorage();
+
+                List<DailyVo> daily = mongodbDataService.daily( tsCode,
+                                                                LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(offset + 30, ChronoUnit.DAYS ).format(TimeUtil.SHORT_DATE_FORMATTER),
+                                                                endDate);
+                HashMap<String, List<DailyVo>> dailyVoMaps = new HashMap<>();
+                dailyVoMaps.put(tsCode, daily);
+                memoryStorage.setDailyVoMaps(dailyVoMaps);
+                memoryStorage.setDailyTradeDateList(daily.stream().map(a -> a.getTrade_date()).collect(Collectors.toList()));
+
+                List<TradeDateVo> tradeDateVos = mongodbDataService.tradeCal("SSE", startDate, endDate);
+                memoryStorage.setTradeDateVoList(tradeDateVos);
+
+                memoryStorageThreadLocal.set(memoryStorage);
+
                 MDC.put("traceId", traceId);
                 MDC.put("tsCode", tsCode);
-                this.process(tsCode);
+                this.process(tsCode, startDate, endDate);
+
+                // 执行完成清理 MemoryStorage
+                memoryStorageThreadLocal.remove();
             });
         }
 
@@ -140,11 +169,12 @@ public class StrategyServiceImpl implements StrategyService {
      * 执行 标的 + 所有时间 任务
      * @param tsCode
      */
-    private void process(String tsCode){
+    private void process(String tsCode, String startDate, String endDate){
         /***************************************************************** for *********************************************************************/
         LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER);
         LocalDate endDateL = LocalDate.parse(endDate, TimeUtil.SHORT_DATE_FORMATTER);
         LocalDate dateL = startDateL;
+
         for(int i = 0; endDateL.compareTo(dateL) >= 0; dateL = dateL.plusDays(1)){
             String date = dateL.format(TimeUtil.SHORT_DATE_FORMATTER);
             if(dataService.tradeCal(date)){
@@ -203,10 +233,9 @@ public class StrategyServiceImpl implements StrategyService {
         if(StringUtils.isNotBlank(endDate)) this.endDate = endDate;
         if(StringUtils.isNotBlank(today)) this.today = today;
         if(StringUtils.isNotBlank(tsCodes)) this.tsCodes = tsCodes.split(",");
-        if(all != null) {
-            this.all = all;
-            if(all) this.initAllTsCodes(); // 初始化所有标的到选样池
-        }
+        if(all != null) this.all = all;
+        if(this.all) this.initAllTsCodes(); // 初始化所有标的到选样池
+
     }
 
     /**
@@ -231,6 +260,8 @@ public class StrategyServiceImpl implements StrategyService {
         this.breakOpenDay = tradeConstantConfig.getBreakOpenDay();
         this.breakCloseDay = tradeConstantConfig.getBreakCloseDay();
         this.filterDay = tradeConstantConfig.getFilterDay();
+        this.offset = tradeConstantConfig.getOffset();
+        this.threadCount = tradeConstantConfig.getThreadCount();
 
     }
 

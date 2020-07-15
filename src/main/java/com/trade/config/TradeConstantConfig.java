@@ -79,6 +79,14 @@ public class TradeConstantConfig {
     @Value("${trade.constant.closeDeep}")
     private Integer closeDeep;
 
+    /** 数据冗余量 **/
+    @Value("${trade.data.count.offset}")
+    private Integer offset;
+
+    /** 线程数量 **/
+    @Value("${trade.constant.threadCount}")
+    private Integer threadCount;
+
     public String getOpenStrategyCode() {
         return openStrategyCode;
     }
@@ -213,5 +221,21 @@ public class TradeConstantConfig {
 
     public void setCloseDeep(Integer closeDeep) {
         this.closeDeep = closeDeep;
+    }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Integer offset) {
+        this.offset = offset;
+    }
+
+    public Integer getThreadCount() {
+        return threadCount;
+    }
+
+    public void setThreadCount(Integer threadCount) {
+        this.threadCount = threadCount;
     }
 }

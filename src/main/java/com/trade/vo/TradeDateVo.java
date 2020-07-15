@@ -1,6 +1,7 @@
 package com.trade.vo;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * @Author georgy
@@ -8,6 +9,16 @@ import java.io.Serializable;
  * @DESC TODO
  */
 public class TradeDateVo implements Serializable {
+
+    public TradeDateVo(){
+        super();
+    }
+
+    public TradeDateVo(String exchange, String calDate){
+        super();
+        this.exchange = exchange;
+        this.calDate = calDate;
+    }
 
     private static final long serialVersionUID = 24375451280286L;
 
@@ -46,5 +57,19 @@ public class TradeDateVo implements Serializable {
 
     public void setPretradeDate(String pretradeDate) {
         this.pretradeDate = pretradeDate;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TradeDateVo that = (TradeDateVo) o;
+        return exchange.equals(that.exchange) &&
+                calDate.equals(that.calDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(exchange, calDate);
     }
 }

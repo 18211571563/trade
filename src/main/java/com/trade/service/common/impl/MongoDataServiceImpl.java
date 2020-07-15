@@ -27,7 +27,6 @@ import java.util.List;
  * @DESC TODO
  */
 @Service
-@Primary
 public class MongoDataServiceImpl implements DataService {
 
     Logger logger = LoggerFactory.getLogger(getClass());

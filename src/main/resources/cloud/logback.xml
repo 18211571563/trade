@@ -115,7 +115,7 @@
     </appender>
 
 
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="rollingFile"/>
     </root>
