@@ -3,8 +3,12 @@ package com.trade.service.common.impl;
 import com.alibaba.fastjson.JSON;
 import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
+import com.trade.memory_storage.MemoryStorage;
+import com.trade.service.common.DataService;
 import com.trade.service.common.RecordTradeMessageService;
+import com.trade.service.common.TradeService;
 import com.trade.utils.CapitalUtil;
+import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderBPVo;
 import com.trade.vo.OrderVo;
@@ -27,6 +31,10 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
+    @Autowired
+    private TradeService tradeService;
+    @Autowired
+    private DataService dataService;
 
     Logger tradeLogger = LoggerFactory.getLogger("trade");
     Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
@@ -105,8 +113,25 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
 
         }
         sfRate = sucessCount.divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
+
+        OrderVo orderVo = tradeService.getOrderVo(tsCode);
+        if(orderVo != null){
+            DailyVo daily = dataService.daily(orderVo.getTsCode(), tradeConstantConfig.getStartDate(), tradeConstantConfig.getEndDate()).get(0);
+            assetLogger.info("-");
+            assetLogger.info("未平仓交易 - 标的:{}, 方向:{}, 价格:{}, 交易量:{}, 交易日:{}, 当前价格:{}, 当前日期: {}",
+                    orderVo.getTsCode(),
+                    orderVo.getDirection() == 1? "多头":((orderVo.getDirection() == 0)? "空头":"未知"),
+                    orderVo.getPrice(),
+                    orderVo.getVolume(),
+                    orderVo.getTime().format(TimeUtil.SHORT_DATE_FORMATTER),
+                    daily.getClose(),
+                    daily.getTrade_date());
+        }
+
+        assetLogger.info("-");
         assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜负次数:{}, 胜负比例:{}, 最大收益比例:{}, 最大回撤比例:{}",
                 totalBp, totalBpRate, sucessCount, sfRate, maxBpRate, minBpRate);
+
         assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
         assetLogger.info(" ");
     }

@@ -50,6 +50,7 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
      * @param daily
      * @param orderVo
      */
+    @Override
     public void close(DailyVo daily, OrderVo orderVo, String closeStrategyCode) {
         /***************************************************************** 是否容许止损 ************************************************************************/
         if(!tradeService.allowClose(daily, orderVo)) return;
