@@ -88,16 +88,9 @@ public class StrategyServiceImpl implements StrategyService {
      */
     @Override
     public String process(String startDate, String endDate, String today, Boolean all, String tsCodes ) throws InterruptedException {
-        // 记录本次操作的traceId
-        MDC.put("traceId", LocalDateTime.now().format(TimeUtil.LONG_DATE_FORMATTER));
-
         // 初始化参数
         this.init(startDate, endDate, today, all, tsCodes);
-
-        Date date = new Date();
         this.process();
-        logger.info(String.format("总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
-
         return MDC.get("traceId");
     }
 

@@ -1,46 +1,102 @@
 package com.trade.aspect;
 
 import com.alibaba.fastjson.JSON;
+import com.trade.config.TradeConstantConfig;
+import com.trade.memory_storage.MemoryStorage;
+import com.trade.service.common.DataService;
+import com.trade.utils.TimeUtil;
+import com.trade.vo.DailyVo;
+import com.trade.vo.TradeDateVo;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by georgy on 2018/11/26.
  */
-//@Aspect
-//@Component
+@Aspect
+@Component
 public class CommonAspect {
+
+    @Autowired
+    private TradeConstantConfig tradeConstantConfig;
+    @Qualifier("mongoDataServiceImpl")
+    private DataService mongodbDataService;
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * 工行本地服务日志切面
+     * 策略入口切面
      * @param joinPoint
      * @return
      */
-    @Around(value="execution(public * com.tcl.multimedia.nretail.central.polymeric.sales2b.web.controller.OrderController.*(..))")
-    public Object aroundMethod(ProceedingJoinPoint joinPoint){
-//            log.info("支付网关调用ICBC本地服务({}.{})入参数据：{}", joinPoint.getSignature().getDeclaringType().getSimpleName(),  joinPoint.getSignature().getName(),(joinPoint.getArgs() != null ? JSON.toJSONString(joinPoint.getArgs()): "null") );
-//            log.info("支付网关调用ICBC本地服务({}.{})返回数据：{}", joinPoint.getSignature().getDeclaringType().getSimpleName(), joinPoint.getSignature().getName(), (result != null ? JSON.toJSONString(result): "null") );
-//        logger.info(JSON.toJSONString(joinPoint.getArgs()));
+    @Around(value="execution(public * com.trade.service.strategy.process.impl.StrategyServiceImpl.process(java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String))")
+    public Object processPre(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        Object result = null;
-        try {
-            result = joinPoint.proceed();
-        }catch (Throwable  e){
-            logger.error("{}.{} : ",joinPoint.getSignature().getDeclaringType().getSimpleName(), joinPoint.getSignature().getName(), e);
-            e.printStackTrace();
-        }
+        // 记录本次操作的traceId
+        MDC.put("traceId", LocalDateTime.now().format(TimeUtil.LONG_DATE_FORMATTER));
+        Date date = new Date();
+
+        Object result = joinPoint.proceed();
+
+        logger.info(String.format("总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
         return result;
     }
+
+//    /**
+//     * 策略每个标的初始化切面 - 初始化本地线程数据
+//     * @param joinPoint
+//     * @return
+//     */
+//    @Around(value="execution(public void com.trade.service.strategy.process.impl.StrategyServiceImpl.process(java.lang.String, java.lang.String, java.lang.String))")
+//    public Object processTsCodePre(ProceedingJoinPoint joinPoint) throws Throwable {
+//        Object[] args = joinPoint.getArgs();
+//        String tsCode = String.valueOf(args[0]);
+//        String startDate = String.valueOf(args[1]);
+//        String endDate = String.valueOf(args[2]);
+//
+//        // 初始化 MemoryStorage 到本地线程
+//        ThreadLocal<MemoryStorage> memoryStorageThreadLocal = MemoryStorage.memoryStorageThreadLocal;
+//        MemoryStorage memoryStorage = new MemoryStorage();
+//
+//        List<DailyVo> daily = mongodbDataService.daily( tsCode,
+//                LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(tradeConstantConfig.getOffset() + 30, ChronoUnit.DAYS ).format(TimeUtil.SHORT_DATE_FORMATTER),
+//                endDate);
+//        HashMap<String, List<DailyVo>> dailyVoMaps = new HashMap<>();
+//        dailyVoMaps.put(tsCode, daily);
+//        memoryStorage.setDailyVoMaps(dailyVoMaps);
+//        memoryStorage.setDailyTradeDateList(daily.stream().map(a -> a.getTrade_date()).collect(Collectors.toList()));
+//
+//        List<TradeDateVo> tradeDateVos = mongodbDataService.tradeCal("SSE", startDate, endDate);
+//        memoryStorage.setTradeDateVoList(tradeDateVos);
+//
+//        memoryStorageThreadLocal.set(memoryStorage);
+//
+//        MDC.put("traceId", MDC.get("traceId"));
+//        MDC.put("tsCode", tsCode);
+//
+//        Object result = joinPoint.proceed();
+//
+//        // 执行完成清理 MemoryStorage
+//        memoryStorageThreadLocal.remove();
+//        return result;
+//    }
+
+
 
 }
