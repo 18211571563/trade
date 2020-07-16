@@ -114,12 +114,13 @@ public class StrategyServiceImpl implements StrategyService {
     private void process() throws InterruptedException {
 
         // 获取当前的traceId
+        String traceId = MDC.get("traceId");
         ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
             executor.execute(() -> {
 
                 // 设置本地线程MDC
-                MDC.put("traceId", MDC.get("traceId"));
+                MDC.put("traceId", traceId);
                 MDC.put("tsCode", tsCode);
 
                 // 初始化 MemoryStorage 数据 到本地线程
