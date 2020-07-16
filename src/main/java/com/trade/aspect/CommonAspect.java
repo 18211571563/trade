@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 @Component
 public class CommonAspect {
 
+    public static Boolean process = false;
+
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
     @Qualifier("mongoDataServiceImpl")
@@ -47,10 +49,14 @@ public class CommonAspect {
      */
     @Around(value="execution(public * com.trade.service.strategy.process.impl.StrategyServiceImpl.process(java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String))")
     public Object processPre(ProceedingJoinPoint joinPoint) throws Throwable {
+        process = true;
         Date date = new Date();
-        // 记录本次操作的traceId
-        MDC.put("traceId", LocalDateTime.now().format(TimeUtil.LONG_DATE_FORMATTER));
-        Object result = joinPoint.proceed();
+        Object result = null;
+        try {
+            result = joinPoint.proceed();
+        }finally {
+            process = false;
+        }
         logger.info(String.format("总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
         return result;
     }

@@ -142,7 +142,7 @@ public class StrategyServiceImpl implements StrategyService {
                 logger.info("所有任务执行完成！");
                 break;
             }
-            Thread.sleep(1000);
+            Thread.sleep(200);
         }
     }
 

@@ -37,7 +37,7 @@ public class TradeServiceImpl implements TradeService {
     Logger tradeLogger = LoggerFactory.getLogger("trade");
 
     @Override
-    public synchronized void open(DailyVo daily, OrderVo orderVo) {
+    public void open(DailyVo daily, OrderVo orderVo) {
 
         // 开仓 - 保存订单
         CapitalManager.tradeOrders.add(orderVo);
@@ -58,7 +58,7 @@ public class TradeServiceImpl implements TradeService {
 
 
     @Override
-    public synchronized void close(DailyVo daily, OrderVo orderVo) {
+    public void close(DailyVo daily, OrderVo orderVo) {
 
         // 移除仓位
         CapitalManager.tradeOrders.remove(orderVo);
@@ -80,7 +80,7 @@ public class TradeServiceImpl implements TradeService {
      * @return
      */
     @Override
-    public synchronized OrderVo getOrderVo(String tsCode){
+    public OrderVo getOrderVo(String tsCode){
         if(!CollectionUtils.isEmpty(CapitalManager.tradeOrders)){
             for (OrderVo orderVo : CapitalManager.tradeOrders) {
                 if(orderVo.getTsCode().equals(tsCode)){
@@ -113,9 +113,8 @@ public class TradeServiceImpl implements TradeService {
      * 冻结金额操作 - 正数冻结，负数释放
      */
     public synchronized void doFrozenCapital(BigDecimal capital){
-        logger.info("冻结金额:{}" , capital.doubleValue());
+        logger.debug("冻结金额:{}" , capital.doubleValue());
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
-
     }
 
 

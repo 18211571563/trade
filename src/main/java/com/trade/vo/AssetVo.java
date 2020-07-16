@@ -48,7 +48,7 @@ public class AssetVo {
 //        this.usableCapital = usableCapital;
 //    }
 
-    public synchronized BigDecimal getFrozenCapital() {
+    public BigDecimal getFrozenCapital() {
         return frozenCapital;
     }
 

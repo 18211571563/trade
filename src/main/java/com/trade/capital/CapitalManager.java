@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by georgy on 2020-02-24.
@@ -23,7 +20,7 @@ public class CapitalManager {
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
 
-    /** 保存交易订单 **/
+    /** 交易订单记录 **/
     public static List<OrderVo> tradeOrders;
 
     /** 资金池 **/
@@ -33,10 +30,10 @@ public class CapitalManager {
     public static Map<String, List<OrderBPVo>> tradeOrdersHistoryMap;
 
     public void init(){
-        tradeOrders = new ArrayList<>();
+        tradeOrders = Collections.synchronizedList(new ArrayList<>());
         assetVo = AssetVo.create(   BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()),
                                     BigDecimal.valueOf(tradeConstantConfig.getRiskParameter()));
-        tradeOrdersHistoryMap = new HashMap<>();
+        tradeOrdersHistoryMap = new Hashtable<>();
     }
 
 
