@@ -92,5 +92,10 @@ public class StrategyController {
         return strategyService.getConfig();
     }
 
+    @GetMapping(value = "ok")
+    public String ok(){
+        return "是否执行完成:" + String.valueOf(!CommonAspect.process);
+    }
+
 }
 

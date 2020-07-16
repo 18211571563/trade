@@ -132,7 +132,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
         assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜负次数:{}, 胜负比例:{}, 最大收益比例:{}, 最大回撤比例:{}",
                 totalBp, totalBpRate, sucessCount, sfRate, maxBpRate, minBpRate);
 
-        assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
+        assetLogger.info("----------------------------------------------------------------------------------------");
         assetLogger.info(" ");
     }
 
@@ -143,6 +143,9 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     public void statisticsCapital(){
         assetLogger.info("########################### {} ###############################", "资金信息");
         assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter());
+        assetLogger.info("");
+        assetLogger.info("########################### {} ###############################", "配置信息");
+        assetLogger.info(JSON.toJSONString(tradeConstantConfig));
         assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
     }
 
