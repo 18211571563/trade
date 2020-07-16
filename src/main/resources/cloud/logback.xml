@@ -37,8 +37,8 @@
         </discriminator>
         <sift>
             <!--具体的写日志appender，每一个taskId创建一个文件-->
-            <appender name="File-${tsCode}" class="ch.qos.logback.core.FileAppender">
-                <File>/work/logs/trade/asset/A_${traceId}.log</File>
+            <appender name="File-Asset" class="ch.qos.logback.core.FileAppender">
+                <File>/work/logs/trade/a/${traceId}</File>
                 <append>true</append>
                 <filter class="ch.qos.logback.classic.filter.LevelFilter">
                     <level>INFO</level>
@@ -47,7 +47,7 @@
                 </filter>
                 <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                     <!--日志文件输出的文件名-->
-                    <fileNamePattern>/work/logs/trade/asset/A_${tsCode}_%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <fileNamePattern>/work/logs/trade/a/${tsCode}_%d{yyyy-MM-dd}</fileNamePattern>
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
@@ -65,8 +65,8 @@
         </discriminator>
         <sift>
             <!--具体的写日志appender，每一个taskId创建一个文件-->
-            <appender name="File-${tsCode}" class="ch.qos.logback.core.FileAppender">
-                <File>/work/logs/trade/trade/T_${tsCode}.log</File>
+            <appender name="File-Trade" class="ch.qos.logback.core.FileAppender">
+                <File>/work/logs/trade/t/${tsCode}</File>
                 <append>true</append>
                 <filter class="ch.qos.logback.classic.filter.LevelFilter">
                     <level>INFO</level>
@@ -75,7 +75,7 @@
                 </filter>
                 <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                     <!--日志文件输出的文件名-->
-                    <fileNamePattern>/work/logs/trade/trade/T_${tsCode}_%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <fileNamePattern>/work/logs/trade/t/${tsCode}_%d{yyyy-MM-dd}</fileNamePattern>
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
@@ -88,13 +88,13 @@
 
     <appender name="todayTrade" class="ch.qos.logback.classic.sift.SiftingAppender">
         <discriminator>
-            <key>tsCode</key>
+            <key>traceId</key>
             <defaultValue>default</defaultValue>
         </discriminator>
         <sift>
             <!--具体的写日志appender，每一个taskId创建一个文件-->
-            <appender name="File-${tsCode}" class="ch.qos.logback.core.FileAppender">
-                <File>/work/logs/trade/todayTrade/TD_${tsCode}.log</File>
+            <appender name="File-TodayTrade" class="ch.qos.logback.core.FileAppender">
+                <File>/work/logs/trade/td/${traceId}</File>
                 <append>true</append>
                 <filter class="ch.qos.logback.classic.filter.LevelFilter">
                     <level>INFO</level>
@@ -103,7 +103,7 @@
                 </filter>
                 <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                     <!--日志文件输出的文件名-->
-                    <fileNamePattern>/work/logs/trade/todayTrade/TD_${tsCode}_%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <fileNamePattern>/work/logs/trade/td/${traceId}_%d{yyyy-MM-dd}</fileNamePattern>
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
