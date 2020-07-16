@@ -114,33 +114,20 @@ public class StrategyServiceImpl implements StrategyService {
     private void process() throws InterruptedException {
 
         // 获取当前的traceId
-        String traceId = MDC.get("traceId");
         ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
         for (String tsCode : tsCodes) {
             executor.execute(() -> {
 
-                // 初始化 MemoryStorage 到本地线程
-                ThreadLocal<MemoryStorage> memoryStorageThreadLocal = MemoryStorage.memoryStorageThreadLocal;
-                MemoryStorage memoryStorage = new MemoryStorage();
-
-                List<DailyVo> daily = mongodbDataService.daily( tsCode,
-                                                                LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(offset + 30, ChronoUnit.DAYS ).format(TimeUtil.SHORT_DATE_FORMATTER),
-                                                                endDate);
-                HashMap<String, List<DailyVo>> dailyVoMaps = new HashMap<>();
-                dailyVoMaps.put(tsCode, daily);
-                memoryStorage.setDailyVoMaps(dailyVoMaps);
-                memoryStorage.setDailyTradeDateList(daily.stream().map(a -> a.getTrade_date()).collect(Collectors.toList()));
-
-                List<TradeDateVo> tradeDateVos = mongodbDataService.tradeCal("SSE", startDate, endDate);
-                memoryStorage.setTradeDateVoList(tradeDateVos);
-
-                memoryStorageThreadLocal.set(memoryStorage);
-
-                MDC.put("traceId", traceId);
+                // 设置本地线程MDC
+                MDC.put("traceId", MDC.get("traceId"));
                 MDC.put("tsCode", tsCode);
+
+                // 初始化 MemoryStorage 数据 到本地线程
+                ThreadLocal<MemoryStorage> memoryStorageThreadLocal = this.initMemoryStorageThreadLocal(tsCode);
+
                 this.process(tsCode, startDate, endDate);
 
-                // 执行完成清理 MemoryStorage
+                // 执行完成清理本地线程中 MemoryStorage 的数据
                 memoryStorageThreadLocal.remove();
             });
         }
@@ -157,6 +144,8 @@ public class StrategyServiceImpl implements StrategyService {
             Thread.sleep(1000);
         }
     }
+
+
 
     /**
      * 执行 标的 + 所有时间 任务
@@ -269,6 +258,31 @@ public class StrategyServiceImpl implements StrategyService {
             initTsCodes.add(ts_code);
         });
         tsCodes = initTsCodes.toArray(new String[initTsCodes.size()]);
+    }
+
+    /**
+     * 初始化 MemoryStorage 数据 到本地线程
+     * @param tsCode
+     * @return
+     */
+    private ThreadLocal<MemoryStorage> initMemoryStorageThreadLocal(String tsCode) {
+        ThreadLocal<MemoryStorage> memoryStorageThreadLocal = MemoryStorage.memoryStorageThreadLocal;
+        MemoryStorage memoryStorage = new MemoryStorage();
+
+        List<DailyVo> daily = mongodbDataService.daily( tsCode,
+                LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(offset + 30, ChronoUnit.DAYS ).format(TimeUtil.SHORT_DATE_FORMATTER),
+                endDate);
+        HashMap<String, List<DailyVo>> dailyVoMaps = new HashMap<>();
+        dailyVoMaps.put(tsCode, daily);
+        memoryStorage.setDailyVoMaps(dailyVoMaps);
+        memoryStorage.setDailyTradeDateList(daily.stream().map(a -> a.getTrade_date()).collect(Collectors.toList()));
+
+        List<TradeDateVo> tradeDateVos = mongodbDataService.tradeCal("SSE", startDate, endDate);
+        memoryStorage.setTradeDateVoList(tradeDateVos);
+
+        memoryStorageThreadLocal.set(memoryStorage);
+
+        return memoryStorageThreadLocal;
     }
 
 
