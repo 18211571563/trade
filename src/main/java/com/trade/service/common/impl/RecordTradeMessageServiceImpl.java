@@ -75,7 +75,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
      * @param tsCode
      */
     @Override
-    public void statistics(String tsCode) {
+    public synchronized void statistics(String tsCode) {
         BigDecimal sucessCount = BigDecimal.ZERO; // 胜负次数
         BigDecimal sfRate = BigDecimal.ZERO; // 胜负比例
         BigDecimal totalBp = BigDecimal.ZERO;// 总损益

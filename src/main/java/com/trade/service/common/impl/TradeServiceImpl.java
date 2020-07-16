@@ -37,7 +37,7 @@ public class TradeServiceImpl implements TradeService {
     Logger tradeLogger = LoggerFactory.getLogger("trade");
 
     @Override
-    public void open(DailyVo daily, OrderVo orderVo) {
+    public synchronized void open(DailyVo daily, OrderVo orderVo) {
 
         // 开仓 - 保存订单
         CapitalManager.tradeOrders.add(orderVo);
@@ -58,7 +58,7 @@ public class TradeServiceImpl implements TradeService {
 
 
     @Override
-    public void close(DailyVo daily, OrderVo orderVo) {
+    public synchronized void close(DailyVo daily, OrderVo orderVo) {
 
         // 移除仓位
         CapitalManager.tradeOrders.remove(orderVo);
