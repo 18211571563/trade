@@ -39,38 +39,48 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public synchronized void open(DailyVo daily, OrderVo orderVo) {
 
-        // 开仓 - 保存订单
-        CapitalManager.tradeOrders.add(orderVo);
-        // 记录交易日志
+        /** 记录交易日志 **/
         recordTradeMessageService.logOpen(daily, orderVo);
 
-
-        // 资金控制 - 判断现在的可用资金是否满足订单金额 并且 冻结金额
-        if(tradeConstantConfig.getUsedCapitail()){
-            if(CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
-                tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
-                return;
-            }
-            this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()));
+        /** 资金控制 - 判断现在的可用资金是否满足订单金额 并且 冻结金额 **/
+        if(BigDecimal.ZERO.compareTo(orderVo.getVolume()) == 0){
+            tradeLogger.error("交易量不可为零，标的:{}，数量:{} ", orderVo.getTsCode(), orderVo.getVolume());
+            return;
         }
+        if(CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
+            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+            return;
+        }
+        BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume());
+        this.doFrozenCapital(tsCapital);
 
+        /** 开仓 - 保存订单 **/
+        CapitalManager.tradeOrders.add(orderVo);
+
+        /** 打印资金信息 **/
+        recordTradeMessageService.simpleStatisticsCapital(tsCapital);
     }
 
 
     @Override
     public synchronized void close(DailyVo daily, OrderVo orderVo) {
-
-        // 移除仓位
-        CapitalManager.tradeOrders.remove(orderVo);
-        // 记录交易日志
+        /** 记录交易日志 **/
         recordTradeMessageService.logClose(daily, orderVo);
 
-        // 核算资金
-        if(tradeConstantConfig.getUsedCapitail()){
-            BigDecimal bp = CapitalUtil.calcBp(daily, orderVo);
-            this.calTotalCapital(bp); // 核算总资金
-            this.doFrozenCapital(orderVo.getPrice().multiply(orderVo.getVolume()).negate()); // 释放锁定资金
-        }
+        /** 核算资金 **/
+        // 计算盈亏
+        BigDecimal bp = CapitalUtil.calcBp(daily, orderVo);
+
+        // 标的资产 = 投入金额 + 盈亏
+        BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume()).add(bp);
+        this.calCapitalByBP(bp); // 根据盈亏计算资金信息 - 未平仓前的资金信息
+        this.doFrozenCapital(tsCapital.negate()); // 释放锁定资金
+
+        /** 移除仓位 **/
+        CapitalManager.tradeOrders.remove(orderVo);
+
+        /** 打印资金信息 **/
+        recordTradeMessageService.simpleStatisticsCapital(tsCapital);
     }
 
 
@@ -101,11 +111,12 @@ public class TradeServiceImpl implements TradeService {
     }
 
     /**
-     * 核算总资金
+     * 根据盈亏计算资金信息
      * @return
      */
     @Override
-    public synchronized void calTotalCapital(BigDecimal bp){
+    public synchronized void calCapitalByBP(BigDecimal bp){
+        CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(bp));
         CapitalManager.assetVo.setTotalCapital(CapitalManager.assetVo.getTotalCapital().add(bp));
     }
 
@@ -113,7 +124,6 @@ public class TradeServiceImpl implements TradeService {
      * 冻结金额操作 - 正数冻结，负数释放
      */
     public synchronized void doFrozenCapital(BigDecimal capital){
-        logger.debug("冻结金额:{}" , capital.doubleValue());
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
     }
 

@@ -47,7 +47,6 @@ public class StrategyServiceImpl implements StrategyService {
     private int threadCount;
     private String[] tsCodes;
     private Boolean all;
-    private Boolean isUsedCapitail;
     private int unit;
     private String today;
     private String startDate;
@@ -90,7 +89,10 @@ public class StrategyServiceImpl implements StrategyService {
     public String process(String startDate, String endDate, String today, Boolean all, String tsCodes ) throws InterruptedException {
         // 初始化参数
         this.init(startDate, endDate, today, all, tsCodes);
+        // 启动
         this.process();
+        // 初始化资金管理
+        capitalManager.init();
         return MDC.get("traceId");
     }
 
@@ -233,7 +235,6 @@ public class StrategyServiceImpl implements StrategyService {
         this.closeStrategyCode = tradeConstantConfig.getCloseStrategyCode();
         this.tsCodes = tradeConstantConfig.getTsCodes();
         this.all = tradeConstantConfig.getUsedAll();
-        this.isUsedCapitail = tradeConstantConfig.getUsedCapitail();
         this.unit = tradeConstantConfig.getUnit();
         this.today = tradeConstantConfig.getToday();
         this.startDate = tradeConstantConfig.getStartDate();

@@ -27,10 +27,6 @@ public class TradeConstantConfig {
     @Value("${trade.constant.usedAll}")
     private Boolean usedAll;
 
-    /** 是否投入资金进行模拟 **/
-    @Value("${trade.constant.isUsedCapitail}")
-    private Boolean isUsedCapitail;
-
     /** 今天时间 **/
     @Value("${trade.constant.today}")
     private String today;
@@ -117,14 +113,6 @@ public class TradeConstantConfig {
 
     public void setUsedAll(Boolean usedAll) {
         this.usedAll = usedAll;
-    }
-
-    public Boolean getUsedCapitail() {
-        return isUsedCapitail;
-    }
-
-    public void setUsedCapitail(Boolean usedCapitail) {
-        isUsedCapitail = usedCapitail;
     }
 
     public String getToday() {

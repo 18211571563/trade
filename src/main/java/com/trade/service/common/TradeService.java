@@ -23,7 +23,7 @@ public interface TradeService {
 
     BigDecimal getTotalCapital();
 
-    void calTotalCapital(BigDecimal bp);
+    void calCapitalByBP(BigDecimal bp);
 
     BigDecimal getRiskParameter();
 

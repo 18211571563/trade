@@ -149,6 +149,14 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
         assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
     }
 
+    /**
+     * 打印交易中的资金信息
+     */
+    @Override
+    public void simpleStatisticsCapital(BigDecimal frozenCapital){
+        tradeLogger.info("资金信息 - 标的操作金额:{}, 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}"+ System.lineSeparator(), frozenCapital, CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter() );
+    }
+
     /** ################################################### private ########################################################################################## **/
 
     /**
@@ -205,7 +213,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
             direction = "平多";
         }
 
-        logger.info("止损 - 标的:{}, 方向:{}, 损益:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}",
+        logger.info("止损 - 标的:{}, 方向:{}, 损益金额:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}",
                 orderVo.getTsCode(),
                 direction,
                 CapitalUtil.calcBp(daily, orderVo).doubleValue(),

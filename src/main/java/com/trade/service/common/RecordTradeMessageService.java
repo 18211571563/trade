@@ -4,6 +4,8 @@ import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
+
 /**
  * @Author georgy
  * @Date 2020-03-31 下午 3:32
@@ -35,4 +37,6 @@ public interface RecordTradeMessageService {
      * 资金信息
      */
     void statisticsCapital();
+
+    void simpleStatisticsCapital(BigDecimal frozenCapital);
 }

@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 public class AssetVo {
 
     private BigDecimal totalCapital = BigDecimal.ZERO; // 总资金
-    private BigDecimal usableCapital = BigDecimal.ZERO; // 可用资金
     private BigDecimal frozenCapital = BigDecimal.ZERO; // 冻结资金
     private BigDecimal riskParameter = BigDecimal.ZERO; // 风险系数 0.50%
 
@@ -28,7 +27,6 @@ public class AssetVo {
         super();
         this.totalCapital = totalCapital;
         this.riskParameter = riskParameter;
-        this.usableCapital = totalCapital;
     }
 
 
@@ -41,12 +39,9 @@ public class AssetVo {
     }
 
     public BigDecimal getUsableCapital() {
-        return usableCapital;
+        return this.totalCapital.subtract(this.frozenCapital);
     }
 
-//    public void setUsableCapital(BigDecimal usableCapital) {
-//        this.usableCapital = usableCapital;
-//    }
 
     public synchronized BigDecimal getFrozenCapital() {
         return frozenCapital;
@@ -54,7 +49,6 @@ public class AssetVo {
 
     public synchronized void setFrozenCapital(BigDecimal frozenCapital) {
         this.frozenCapital = frozenCapital;
-        this.usableCapital = this.totalCapital.subtract(this.frozenCapital);
     }
 
     public BigDecimal getRiskParameter() {
