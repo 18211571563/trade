@@ -134,7 +134,7 @@ public class CapitalUtil {
      * @return
      */
     public static BigDecimal getTradeCapital(BigDecimal totalCapital, BigDecimal riskParameter){
-        return totalCapital.multiply(riskParameter).divide(BigDecimal.valueOf(100), 2, BigDecimal.ROUND_HALF_UP);
+        return totalCapital.multiply(riskParameter).divide(BigDecimal.valueOf(10000), 2, BigDecimal.ROUND_HALF_UP);
     }
 
     /**
