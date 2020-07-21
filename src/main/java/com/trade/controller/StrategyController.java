@@ -33,45 +33,16 @@ public class StrategyController {
     @Autowired
     private ThreadPoolManager threadPoolManager;
 
+
+
     @GetMapping(value = "process")
-    public String process() throws InterruptedException {
-        String today = LocalDate.now().format(TimeUtil.SHORT_DATE_FORMATTER);
-        String startDate = LocalDate.parse(today, TimeUtil.SHORT_DATE_FORMATTER).minusYears(1).format(TimeUtil.SHORT_DATE_FORMATTER);
-        return this.process(startDate , today, today, null, null);
-    }
-
-    @GetMapping(value = "process/{tsCodes}")
-    public String process(@PathVariable String tsCodes) throws InterruptedException {
-        String today = LocalDate.now().format(TimeUtil.SHORT_DATE_FORMATTER);
-        String startDate = LocalDate.parse(today, TimeUtil.SHORT_DATE_FORMATTER).minusYears(1).format(TimeUtil.SHORT_DATE_FORMATTER);
-        return this.process(startDate , today, today, false, tsCodes);
-    }
-
-    @GetMapping(value = "process/{startDate}/{endDate}")
-    public String process(@PathVariable String startDate,
-                          @PathVariable String endDate) throws InterruptedException {
-        return this.process(startDate, endDate, endDate, null, null);
-    }
-
-    @GetMapping(value = "process/{tsCodes}/{startDate}/{endDate}")
-    public String process(@PathVariable String startDate,
-                          @PathVariable String endDate,
-                          @PathVariable String tsCodes) throws InterruptedException {
-        return this.process(startDate, endDate, endDate, false, tsCodes);
-    }
-
-    @GetMapping(value = "process/{tsCodes}/{startDate}/{endDate}/{today}/{all}")
-    public String process(@PathVariable String startDate,
-                          @PathVariable String endDate,
-                          @PathVariable String today,
-                          @PathVariable Boolean all,
-                          @PathVariable String tsCodes) throws InterruptedException {
+    public String exec() throws InterruptedException {
         if(CommonAspect.process) throw new RuntimeException("程序运行中，请莫重复运行！");
         String traceId = LocalDateTime.now().format(TimeUtil.LONG_DATE_FORMATTER);
         threadPoolManager.getProcessSingleExecutorService().execute(() -> {
             try {
                 MDC.put("traceId", traceId);
-                strategyService.process(startDate, endDate, today, all, tsCodes);
+                strategyService.exec();
             } catch (Exception e) {
                 logger.error("执行策略异常:{}", e);
                 e.printStackTrace();
@@ -79,17 +50,6 @@ public class StrategyController {
         });
 
         return traceId;
-    }
-
-    @GetMapping(value = "config/update")
-    public String updateConfig(TradeConstantConfig tradeConstantConfig) throws InvocationTargetException, IllegalAccessException {
-        strategyService.updateConfig(tradeConstantConfig);
-        return "success";
-    }
-
-    @GetMapping(value = "config/get")
-    public String getConfig() throws InvocationTargetException, IllegalAccessException {
-        return strategyService.getConfig();
     }
 
     @GetMapping(value = "ok")

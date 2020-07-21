@@ -10,25 +10,19 @@ import com.trade.service.common.TradeService;
 import com.trade.service.strategy.close.CloseStrategyService;
 import com.trade.service.strategy.open.OpenStrategyService;
 import com.trade.service.strategy.process.StrategyService;
-import com.trade.utils.CommonUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -86,26 +80,18 @@ public class StrategyServiceImpl implements StrategyService {
      * @throws InterruptedException
      */
     @Override
-    public String process(String startDate, String endDate, String today, Boolean all, String tsCodes ) throws InterruptedException {
+    public String exec() throws InterruptedException {
         // 初始化参数
-        this.init(startDate, endDate, today, all, tsCodes);
+        this.init();
+
         // 启动
         this.process();
+
         // 初始化资金管理
         capitalManager.init();
+
         return MDC.get("traceId");
     }
-
-    @Override
-    public void updateConfig(TradeConstantConfig config) throws InvocationTargetException, IllegalAccessException {
-        BeanUtils.copyProperties(config, tradeConstantConfig, CommonUtil.getNullPropertyNames(config));
-    }
-
-    @Override
-    public String getConfig() throws InvocationTargetException, IllegalAccessException {
-        return JSON.toJSONString(tradeConstantConfig);
-    }
-
 
     /** ################################################### private ########################################################################################## **/
 
@@ -206,19 +192,9 @@ public class StrategyServiceImpl implements StrategyService {
 
     /**
      * 初始化
-     * @param startDate
-     * @param endDate
-     * @param today
-     * @param all
-     * @param tsCodes
      */
-    private void init(String startDate, String endDate, String today, Boolean all, String tsCodes) {
+    private void init() {
         this.initConfig(); // 默认读取配置文件
-        if(StringUtils.isNotBlank(startDate)) this.startDate = startDate;
-        if(StringUtils.isNotBlank(endDate)) this.endDate = endDate;
-        if(StringUtils.isNotBlank(today)) this.today = today;
-        if(StringUtils.isNotBlank(tsCodes)) this.tsCodes = tsCodes.split(",");
-        if(all != null) this.all = all;
         if(this.all) this.initAllTsCodes(); // 初始化所有标的到选样池
 
     }

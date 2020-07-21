@@ -11,9 +11,5 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface StrategyService {
 
-    String process(String startDate, String endDate, String today, Boolean all, String tsCodes) throws InterruptedException;
-
-    void updateConfig(TradeConstantConfig tradeConstantConfig) throws InvocationTargetException, IllegalAccessException;
-
-    String getConfig() throws InvocationTargetException, IllegalAccessException;
+    String exec() throws InterruptedException;
 }

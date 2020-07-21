@@ -19,8 +19,8 @@ public class StrategyServiceImplTest extends BaseTest {
     private StrategyService strategyService;
 
     @Test
-    public void process() throws InterruptedException {
-        strategyService.process("","","", null, null);
+    public void exec() throws InterruptedException {
+        strategyService.exec();
     }
 
 }
