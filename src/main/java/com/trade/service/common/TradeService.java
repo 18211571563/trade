@@ -21,14 +21,6 @@ public interface TradeService {
 
     OrderVo getOrderVo(String tsCode);
 
-    BigDecimal getTotalCapital();
-
-    void calCapitalByBP(BigDecimal bp);
-
-    BigDecimal getRiskParameter();
-
-    List<OrderVo> getTradeOrders();
-
     Boolean isHoldPosition(OrderVo orderVo);
 
     Boolean allowOpen(DailyVo daily, OrderVo orderVo);

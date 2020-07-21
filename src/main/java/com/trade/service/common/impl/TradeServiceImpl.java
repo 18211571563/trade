@@ -32,6 +32,8 @@ public class TradeServiceImpl implements TradeService {
     private RecordTradeMessageService recordTradeMessageService;
     @Autowired
     private StrategyConstantConfig strategyConstantConfig;
+    @Autowired
+    private CapitalManager capitalManager;
 
     Logger logger = LoggerFactory.getLogger(getClass());
     Logger tradeLogger = LoggerFactory.getLogger("trade");
@@ -47,15 +49,15 @@ public class TradeServiceImpl implements TradeService {
             tradeLogger.error("交易量不可为零，标的:{}，数量:{} ", orderVo.getTsCode(), orderVo.getVolume());
             return;
         }
-        if(CapitalManager.assetVo.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
-            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", CapitalManager.assetVo.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+        if(capitalManager.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
+            tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", capitalManager.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
             return;
         }
         BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume());
-        this.doFrozenCapital(tsCapital);
+        capitalManager.doFrozenCapital(tsCapital);
 
         /** 开仓 - 保存订单 **/
-        CapitalManager.tradeOrders.add(orderVo);
+        capitalManager.addTradeOrders(daily, orderVo);
 
         /** 打印资金信息 **/
         recordTradeMessageService.simpleStatisticsCapital(tsCapital);
@@ -73,11 +75,11 @@ public class TradeServiceImpl implements TradeService {
 
         // 标的资产 = 投入金额 + 盈亏
         BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume()).add(bp);
-        this.calCapitalByBP(bp); // 根据盈亏计算资金信息 - 未平仓前的资金信息
-        this.doFrozenCapital(tsCapital.negate()); // 释放锁定资金
+        capitalManager.calCapitalByBP(bp); // 根据盈亏计算资金信息 - 未平仓前的资金信息
+        capitalManager.doFrozenCapital(tsCapital.negate()); // 释放锁定资金
 
         /** 移除仓位 **/
-        CapitalManager.tradeOrders.remove(orderVo);
+        capitalManager.removeTradeOrders(daily, orderVo);
 
         /** 打印资金信息 **/
         recordTradeMessageService.simpleStatisticsCapital(tsCapital);
@@ -91,60 +93,14 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public OrderVo getOrderVo(String tsCode){
-        if(!CollectionUtils.isEmpty(CapitalManager.tradeOrders)){
-            for (OrderVo orderVo : CapitalManager.tradeOrders) {
+        if(!CollectionUtils.isEmpty(capitalManager.getTradeOrders())){
+            for (OrderVo orderVo : capitalManager.getTradeOrders()) {
                 if(orderVo.getTsCode().equals(tsCode)){
                     return orderVo;
                 }
             }
         }
         return null;
-    }
-
-    /**
-     * 获取总资金
-     * @return
-     */
-    @Override
-    public BigDecimal getTotalCapital(){
-        return CapitalManager.assetVo.getTotalCapital();
-    }
-
-    /**
-     * 根据盈亏计算资金信息
-     * @return
-     */
-    @Override
-    public synchronized void calCapitalByBP(BigDecimal bp){
-        CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(bp));
-        CapitalManager.assetVo.setTotalCapital(CapitalManager.assetVo.getTotalCapital().add(bp));
-    }
-
-    /**
-     * 冻结金额操作 - 正数冻结，负数释放
-     */
-    public synchronized void doFrozenCapital(BigDecimal capital){
-        CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
-    }
-
-
-
-    /**
-     * 获取风险系数
-     * @return
-     */
-    @Override
-    public BigDecimal getRiskParameter(){
-        return CapitalManager.assetVo.getRiskParameter();
-    }
-
-    /**
-     * 获取交易池
-     * @return
-     */
-    @Override
-    public List<OrderVo> getTradeOrders(){
-        return CapitalManager.tradeOrders;
     }
 
     /**

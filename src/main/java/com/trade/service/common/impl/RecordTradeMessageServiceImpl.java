@@ -35,6 +35,8 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     private TradeService tradeService;
     @Autowired
     private DataService dataService;
+    @Autowired
+    private CapitalManager capitalManager;
 
     Logger tradeLogger = LoggerFactory.getLogger("trade");
     Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
@@ -67,7 +69,6 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
         if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
             this.logClose(todayTradeLogger, daily, orderVo);
         }
-        this.saveTradeOrdersHistory(daily, orderVo);
     }
 
     /**
@@ -84,7 +85,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
         BigDecimal minBpRate = BigDecimal.ZERO; // 最大回撤比例
 
         assetLogger.info("########################### {} ###############################", tsCode);
-        List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(tsCode);
+        List<OrderBPVo> orderBPVos = capitalManager.getTradeOrdersHistoryMap().get(tsCode);
         if(orderBPVos == null) return;
         for (OrderBPVo orderBPVo : orderBPVos) {
             String direction  = orderBPVo.getDirection() == 1? "多头":((orderBPVo.getDirection() == 0)? "空头":"未知") ;
@@ -164,7 +165,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     @Override
     public void statisticsCapital(){
         assetLogger.info("########################### {} ###############################", "资金信息");
-        assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter());
+        assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter());
         assetLogger.info("");
         assetLogger.info("########################### {} ###############################", "配置信息");
         assetLogger.info(JSON.toJSONString(tradeConstantConfig));
@@ -176,26 +177,12 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
      */
     @Override
     public void simpleStatisticsCapital(BigDecimal frozenCapital){
-        tradeLogger.info("资金信息 - 标的操作金额:{}, 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}"+ System.lineSeparator(), frozenCapital, CapitalManager.assetVo.getTotalCapital(), CapitalManager.assetVo.getUsableCapital(), CapitalManager.assetVo.getFrozenCapital(), CapitalManager.assetVo.getRiskParameter() );
+        tradeLogger.info("资金信息 - 标的操作金额:{}, 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}"+ System.lineSeparator(), frozenCapital, capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter() );
     }
 
     /** ################################################### private ########################################################################################## **/
 
-    /**
-     * 保存交易订单历史记录
-     * @param daily
-     * @param orderVo
-     */
-    private void saveTradeOrdersHistory(DailyVo daily, OrderVo orderVo) {
-        List<OrderBPVo> orderBPVos = CapitalManager.tradeOrdersHistoryMap.get(daily.getTs_code());
-        if(orderBPVos == null){
-            orderBPVos = new ArrayList<>();
-            CapitalManager.tradeOrdersHistoryMap.put(daily.getTs_code(), orderBPVos);
-        }
-        OrderBPVo orderBPVo = new OrderBPVo(orderVo.getTsCode(), orderVo.getDirection(),CapitalUtil.calcBp(daily, orderVo),CapitalUtil.calcBpRate(daily, orderVo),daily.getTrade_date(), orderVo.getPrice(),new BigDecimal(daily.getClose()),orderVo.getVolume());
-        orderBPVos.add(orderBPVo);
 
-    }
 
     /**
      * 格式化平仓日志格式

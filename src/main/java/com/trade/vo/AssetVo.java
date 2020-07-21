@@ -38,11 +38,6 @@ public class AssetVo {
         this.totalCapital = totalCapital;
     }
 
-    public BigDecimal getUsableCapital() {
-        return this.totalCapital.subtract(this.frozenCapital);
-    }
-
-
     public synchronized BigDecimal getFrozenCapital() {
         return frozenCapital;
     }
