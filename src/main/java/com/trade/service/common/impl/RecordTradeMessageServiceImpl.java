@@ -112,22 +112,44 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
             }
 
         }
-        sfRate = sucessCount.divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
 
         OrderVo orderVo = tradeService.getOrderVo(tsCode);
         if(orderVo != null){
             DailyVo daily = dataService.daily(orderVo.getTsCode(), tradeConstantConfig.getStartDate(), tradeConstantConfig.getEndDate()).get(0);
+            BigDecimal bp = CapitalUtil.calcBp(orderVo.getDirection(), orderVo.getPrice(), orderVo.getVolume(), daily.getClose());
+            BigDecimal bp_rate = CapitalUtil.calcBpRate(orderVo.getDirection(), orderVo.getPrice(), daily.getClose());
             assetLogger.info("-");
-            assetLogger.info("未平仓交易 - 标的:{}, 方向:{}, 价格:{}, 交易量:{}, 交易日:{}, 当前价格:{}, 当前日期: {}",
-                    orderVo.getTsCode(),
+            assetLogger.info("未平仓交易 - 方向:{}, bp:{}, bp比率:{}, 开仓价:{}, 当前价格:{},交易量:{}, 交易日: {}",
                     orderVo.getDirection() == 1? "多头":((orderVo.getDirection() == 0)? "空头":"未知"),
+                    bp,
+                    bp_rate,
                     orderVo.getPrice(),
-                    orderVo.getVolume(),
-                    orderVo.getTime().format(TimeUtil.SHORT_DATE_FORMATTER),
                     daily.getClose(),
+                    orderVo.getVolume(),
                     daily.getTrade_date());
+
+            // sucessCount: 胜利次数+1
+            if(bp.compareTo(BigDecimal.ZERO) > 0){
+                sucessCount = sucessCount.add(BigDecimal.ONE);
+            }
+
+            // totalBp
+            totalBp = totalBp.add(bp);
+
+            // totalBpRate
+            totalBpRate = totalBpRate.add(bp_rate);
+
+            // maxBpRate/minBpRate
+            if(     bp_rate.compareTo(BigDecimal.ZERO) > 0 &&
+                    bp_rate.compareTo(maxBpRate) > 0){
+                maxBpRate = bp_rate;
+            }else if(bp_rate.compareTo(BigDecimal.ZERO) < 0 &&
+                    bp_rate.compareTo(minBpRate) < 0){
+                minBpRate = bp_rate;
+            }
         }
 
+        sfRate = sucessCount.divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
         assetLogger.info("-");
         assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜负次数:{}, 胜负比例:{}, 最大收益比例:{}, 最大回撤比例:{}",
                 totalBp, totalBpRate, sucessCount, sfRate, maxBpRate, minBpRate);
