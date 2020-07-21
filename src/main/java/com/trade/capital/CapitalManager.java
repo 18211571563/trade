@@ -6,6 +6,8 @@ import com.trade.vo.AssetVo;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderBPVo;
 import com.trade.vo.OrderVo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 @Component
 public class CapitalManager {
+
+    private Logger capitalLogger = LoggerFactory.getLogger("capital");
 
     private static Lock lockCapital = new ReentrantLock();
 
@@ -77,15 +81,44 @@ public class CapitalManager {
      * @return
      */
     private synchronized void calCapitalByBP(BigDecimal bp){
+        BigDecimal originalTotalCapital = this.getTotalCapital();
+        BigDecimal originalUsableCapital = this.getUsableCapital();
+        BigDecimal originalFrozenCapital = this.getFrozenCapital();
+
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(bp));
         CapitalManager.assetVo.setTotalCapital(CapitalManager.assetVo.getTotalCapital().add(bp));
+
+        capitalLogger.info("初始总资金:{}, 初始可用资金:{}, 初始冻结资金:{}, 盈亏:{}, 总资金:{}, 可用资金:{}, 冻结资金:{}",
+                originalTotalCapital,
+                originalUsableCapital,
+                originalFrozenCapital,
+                bp,
+                this.getTotalCapital(),
+                this.getUsableCapital(),
+                this.getFrozenCapital()
+        );
+
     }
 
     /**
      * 冻结金额操作 - 正数冻结，负数释放
      */
     private synchronized void doFrozenCapital(BigDecimal capital){
+        BigDecimal originalTotalCapital = this.getTotalCapital();
+        BigDecimal originalUsableCapital = this.getUsableCapital();
+        BigDecimal originalFrozenCapital = this.getFrozenCapital();
+
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
+
+        capitalLogger.info("初始总资金:{},初始可用资金:{}, 初始冻结资金:{}, 需冻结资金:{}, 总资金:{},可用资金:{}, 冻结资金:{}",
+                originalTotalCapital,
+                originalUsableCapital,
+                originalFrozenCapital,
+                capital,
+                this.getTotalCapital(),
+                this.getUsableCapital(),
+                this.getFrozenCapital()
+        );
     }
 
     /**

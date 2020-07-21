@@ -114,6 +114,34 @@
         </sift>
     </appender>
 
+    <appender name="capital" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <key>traceId</key>
+            <defaultValue>default</defaultValue>
+        </discriminator>
+        <sift>
+            <!--具体的写日志appender，每一个taskId创建一个文件-->
+            <appender name="File-Capital" class="ch.qos.logback.core.FileAppender">
+                <File>E:/work/logs/trade/c/${traceId}.log</File>
+                <append>true</append>
+                <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                    <level>INFO</level>
+                    <!--<OnMismatch>DENY</OnMismatch>-->
+                    <!--<OnMatch>ACCEPT</OnMatch>-->
+                </filter>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <!--日志文件输出的文件名-->
+                    <fileNamePattern>E:/work/logs/trade/c/${traceId}_%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>7</maxHistory>
+                </rollingPolicy>
+                <encoder>
+                    <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+                    <charset>UTF-8</charset>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
 
     <root level="ERROR">
         <appender-ref ref="STDOUT" />
@@ -132,6 +160,11 @@
 
     <logger name="asset" level="INFO" additivity="false">
         <appender-ref ref="asset"/>
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="capital" level="INFO" additivity="false">
+        <appender-ref ref="capital"/>
         <appender-ref ref="STDOUT" />
     </logger>
 </configuration>

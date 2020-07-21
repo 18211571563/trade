@@ -47,7 +47,7 @@ public class CommonAspect {
      * @param joinPoint
      * @return
      */
-    @Around(value="execution(public * com.trade.service.strategy.process.impl.StrategyServiceImpl.process(java.lang.String, java.lang.String, java.lang.String, java.lang.Boolean, java.lang.String))")
+    @Around(value="execution(public * com.trade.service.strategy.process.impl.StrategyServiceImpl.exec())")
     public Object processPre(ProceedingJoinPoint joinPoint) throws Throwable {
         process = true;
         Date date = new Date();
