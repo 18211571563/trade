@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by georgy on 2020-02-24.
@@ -18,6 +20,8 @@ import java.util.*;
  */
 @Component
 public class CapitalManager {
+
+    private static Lock lockCapital = new ReentrantLock();
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
@@ -39,10 +43,40 @@ public class CapitalManager {
     }
 
     /**
+     * 冻结金额操作(开仓)
+     * @param capital 解冻资金
+     */
+    public synchronized void openCapital(BigDecimal capital){
+        lockCapital.lock();
+        try {
+            this.doFrozenCapital(capital);
+        }finally {
+            lockCapital.unlock();
+        }
+
+    }
+
+    /**
+     * 计算盈亏，解冻资金(平仓)
+     * @param capital 解冻资金
+     * @param bp 盈亏
+     */
+    public synchronized void closeCapital(BigDecimal capital, BigDecimal bp){
+        lockCapital.lock();
+        try {
+            this.calCapitalByBP(bp);
+            this.doFrozenCapital(capital.negate());
+        }finally {
+            lockCapital.unlock();
+        }
+
+    }
+
+    /**
      * 根据盈亏计算资金信息
      * @return
      */
-    public synchronized void calCapitalByBP(BigDecimal bp){
+    private synchronized void calCapitalByBP(BigDecimal bp){
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(bp));
         CapitalManager.assetVo.setTotalCapital(CapitalManager.assetVo.getTotalCapital().add(bp));
     }
@@ -50,7 +84,7 @@ public class CapitalManager {
     /**
      * 冻结金额操作 - 正数冻结，负数释放
      */
-    public synchronized void doFrozenCapital(BigDecimal capital){
+    private synchronized void doFrozenCapital(BigDecimal capital){
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
     }
 

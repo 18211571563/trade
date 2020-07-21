@@ -53,10 +53,10 @@ public class TradeServiceImpl implements TradeService {
             tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", capitalManager.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
             return;
         }
-        BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume());
-        capitalManager.doFrozenCapital(tsCapital);
-
         /** 开仓 - 保存订单 **/
+        BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume());
+
+        capitalManager.openCapital(tsCapital);
         capitalManager.addTradeOrders(daily, orderVo);
 
         /** 打印资金信息 **/
@@ -75,10 +75,8 @@ public class TradeServiceImpl implements TradeService {
 
         // 标的资产 = 投入金额 + 盈亏
         BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume()).add(bp);
-        capitalManager.calCapitalByBP(bp); // 根据盈亏计算资金信息 - 未平仓前的资金信息
-        capitalManager.doFrozenCapital(tsCapital.negate()); // 释放锁定资金
 
-        /** 移除仓位 **/
+        capitalManager.closeCapital(tsCapital, bp);
         capitalManager.removeTradeOrders(daily, orderVo);
 
         /** 打印资金信息 **/
