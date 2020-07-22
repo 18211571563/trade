@@ -122,7 +122,7 @@
         <sift>
             <!--具体的写日志appender，每一个taskId创建一个文件-->
             <appender name="File-Capital" class="ch.qos.logback.core.FileAppender">
-                <File>/work/logs/trade/c/${traceId}.log</File>
+                <File>/work/logs/trade/c/${traceId}.txt</File>
                 <append>true</append>
                 <filter class="ch.qos.logback.classic.filter.LevelFilter">
                     <level>INFO</level>
@@ -131,7 +131,7 @@
                 </filter>
                 <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
                     <!--日志文件输出的文件名-->
-                    <fileNamePattern>/work/logs/trade/c/${traceId}_%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <fileNamePattern>/work/logs/trade/c/${traceId}_%d{yyyy-MM-dd}.txt</fileNamePattern>
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
