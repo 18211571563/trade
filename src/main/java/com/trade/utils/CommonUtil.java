@@ -37,7 +37,7 @@ public class CommonUtil {
      * @param list 数据集合
      * @param localDate
      * @param limit 限制次数
-     * @param direction 方向： -1: 左边  1: 右边
+     * @param direction 方向: -1  1
      * @return
      */
     public static int getValidIndexToList(List list, LocalDate localDate, int limit, int direction ){

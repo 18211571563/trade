@@ -71,9 +71,9 @@ public class MemoryDataServiceImpl implements DataService {
         List<DailyVo> dailyVos = memoryStorage.dailyVoMaps.get(ts_code);
 
         int start_date_i = CommonUtil.getValidIndexToList(memoryStorage.dailyTradeDateList,
-                LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER), 100, 1);
+                LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER), 100, -1);
         int end_date_i = CommonUtil.getValidIndexToList(memoryStorage.dailyTradeDateList,
-                LocalDate.parse(end_date, TimeUtil.SHORT_DATE_FORMATTER), 100, -1);
+                LocalDate.parse(end_date, TimeUtil.SHORT_DATE_FORMATTER), 100, 1);
 
         if(start_date_i != -1 && end_date_i != -1 && !CollectionUtils.isEmpty(dailyVos)){
             List<DailyVo> datas = dailyVos.subList(end_date_i, start_date_i + 1);
