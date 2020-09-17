@@ -1,6 +1,8 @@
 <!-- local -->
 <configuration>
     <property name="DEFAULT_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{X-B3-TraceId}] [%X{X-B3-SpanId}] [trade] [%logger{0}] - %msg%n"/>
+    <property name="SIMPLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%logger{0}] - %msg%n"/>
+
 
     <!-- 控制台输出 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
@@ -51,7 +53,7 @@
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
-                    <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+                    <pattern>${SIMPLE_LOG_PATTERN}</pattern>
                     <charset>UTF-8</charset>
                 </encoder>
             </appender>
@@ -79,7 +81,7 @@
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
-                    <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+                    <pattern>${SIMPLE_LOG_PATTERN}</pattern>
                     <charset>UTF-8</charset>
                 </encoder>
             </appender>
@@ -107,7 +109,7 @@
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
-                    <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+                    <pattern>${SIMPLE_LOG_PATTERN}</pattern>
                     <charset>UTF-8</charset>
                 </encoder>
             </appender>
@@ -135,7 +137,7 @@
                     <maxHistory>7</maxHistory>
                 </rollingPolicy>
                 <encoder>
-                    <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+                    <pattern>${SIMPLE_LOG_PATTERN}</pattern>
                     <charset>UTF-8</charset>
                 </encoder>
             </appender>
