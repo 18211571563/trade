@@ -110,14 +110,14 @@ public class CapitalManager {
 
         CapitalManager.assetVo.setFrozenCapital(CapitalManager.assetVo.getFrozenCapital().add(capital));
 
-        capitalLogger.info("初始总资金:{},初始可用资金:{}, 初始冻结资金:{}, 需冻结资金:{}, 总资金:{},可用资金:{}, 冻结资金:{}",
+        capitalLogger.info("总资金:{}, 可用资金:{}, 冻结资金:{}, 初始总资金:{}, 初始可用资金:{}, 初始冻结资金:{}, 需冻结资金:{}",
+                this.getTotalCapital(),
+                this.getUsableCapital(),
+                this.getFrozenCapital(),
                 originalTotalCapital,
                 originalUsableCapital,
                 originalFrozenCapital,
-                capital,
-                this.getTotalCapital(),
-                this.getUsableCapital(),
-                this.getFrozenCapital()
+                capital
         );
     }
 
