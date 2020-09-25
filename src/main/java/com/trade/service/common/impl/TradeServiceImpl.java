@@ -36,23 +36,27 @@ public class TradeServiceImpl implements TradeService {
     private CapitalManager capitalManager;
 
     Logger logger = LoggerFactory.getLogger(getClass());
+    Logger assetLogger = LoggerFactory.getLogger("asset");
     Logger tradeLogger = LoggerFactory.getLogger("trade");
 
     @Override
     public synchronized void open(DailyVo daily, OrderVo orderVo) {
 
-        /** 记录交易日志 **/
-        recordTradeMessageService.logOpen(daily, orderVo);
-
         /** 资金控制 - 判断现在的可用资金是否满足订单金额 并且 冻结金额 **/
         if(BigDecimal.ZERO.compareTo(orderVo.getVolume()) == 0){
             tradeLogger.error("交易量不可为零，标的:{}，数量:{} ", orderVo.getTsCode(), orderVo.getVolume());
+            assetLogger.error("交易量不可为零，标的:{}，数量:{} ", orderVo.getTsCode(), orderVo.getVolume());
             return;
         }
         if(capitalManager.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
             tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", capitalManager.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+            assetLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", capitalManager.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
             return;
         }
+
+        /** 记录交易日志 **/
+        recordTradeMessageService.logOpen(daily, orderVo);
+
         /** 开仓 - 保存订单 **/
         BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume());
 
@@ -91,14 +95,7 @@ public class TradeServiceImpl implements TradeService {
      */
     @Override
     public OrderVo getOrderVo(String tsCode){
-        if(!CollectionUtils.isEmpty(capitalManager.getTradeOrders())){
-            for (OrderVo orderVo : capitalManager.getTradeOrders()) {
-                if(orderVo.getTsCode().equals(tsCode)){
-                    return orderVo;
-                }
-            }
-        }
-        return null;
+        return capitalManager.getOrderVo(tsCode);
     }
 
     /**
@@ -141,7 +138,7 @@ public class TradeServiceImpl implements TradeService {
         // 判断是否持仓
         Boolean isHoldPosition = this.isHoldPosition(orderVo);
         if(!isHoldPosition){ // 没有持有仓位
-            logger.info("止损 - 没有头寸无需止损, 交易日:{}, 数据:{}" ,daily.getTrade_date() , JSON.toJSONString(daily));
+            logger.info("止损 - 没有头寸无需止损, 交易日:{}," ,daily.getTrade_date() , JSON.toJSONString(daily));
             allow = false;
         }
         return allow;

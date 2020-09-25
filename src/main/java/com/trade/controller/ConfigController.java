@@ -2,6 +2,7 @@ package com.trade.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.trade.config.TradeConstantConfig;
+import com.trade.service.common.MemoryService;
 import com.trade.service.strategy.process.StrategyService;
 import com.trade.utils.CommonUtil;
 import org.springframework.beans.BeanUtils;
@@ -23,10 +24,16 @@ public class ConfigController {
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
+    @Autowired
+    private MemoryService memoryService;
 
     @GetMapping(value = "/update")
-    public String updateConfig(TradeConstantConfig config) throws InvocationTargetException, IllegalAccessException {
+    public String updateConfig(TradeConstantConfig config) throws InvocationTargetException, IllegalAccessException, InterruptedException {
         BeanUtils.copyProperties(config, tradeConstantConfig, CommonUtil.getNullPropertyNames(config));
+//        Thread.sleep(500);
+//        memoryService.clear();
+//        Thread.sleep(500);
+//        memoryService.asyncLoad();
         return "success";
     }
 

@@ -54,6 +54,8 @@ public class StrategyServiceImpl implements StrategyService {
     private int offset;
 
     Logger logger = LoggerFactory.getLogger(getClass());
+    Logger assetLogger = LoggerFactory.getLogger("asset");
+    private Logger capitalLogger = LoggerFactory.getLogger("capital");
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
@@ -87,7 +89,7 @@ public class StrategyServiceImpl implements StrategyService {
         // 启动
         this.process();
 
-        // 初始化资金管理
+        // 初始化资金管理 - 还原
         capitalManager.init();
 
         return MDC.get("traceId");
@@ -103,64 +105,53 @@ public class StrategyServiceImpl implements StrategyService {
 
         // 获取当前的traceId
         String traceId = MDC.get("traceId");
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
-        for (String tsCode : tsCodes) {
-            executor.execute(() -> {
 
-                // 设置本地线程MDC
-                MDC.put("traceId", traceId);
-                MDC.put("tsCode", tsCode);
-
-                // 初始化 MemoryStorage 数据 到本地线程
-                ThreadLocal<MemoryStorage> memoryStorageThreadLocal = this.initMemoryStorageThreadLocal(tsCode);
-
-                this.process(tsCode, startDate, endDate);
-
-                // 执行完成清理本地线程中 MemoryStorage 的数据
-                memoryStorageThreadLocal.remove();
-            });
-        }
-
-        executor .shutdown();
-        while(true){
-            if(executor.isTerminated()){
-                // 打印资金信息
-                recordTradeMessageService.statisticsCapital();
-                
-                logger.info("所有任务执行完成！");
-                break;
-            }
-            Thread.sleep(200);
-        }
-    }
-
-
-
-    /**
-     * 执行 标的 + 所有时间 任务
-     * @param tsCode
-     */
-    private void process(String tsCode, String startDate, String endDate){
-        /***************************************************************** for *********************************************************************/
+        // 转换时间格式
         LocalDate startDateL = LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER);
         LocalDate endDateL = LocalDate.parse(endDate, TimeUtil.SHORT_DATE_FORMATTER);
         LocalDate dateL = startDateL;
 
         for(int i = 0; endDateL.compareTo(dateL) >= 0; dateL = dateL.plusDays(1)){
+
             String date = dateL.format(TimeUtil.SHORT_DATE_FORMATTER);
             if(dataService.tradeCal(date)){
+
                 logger.info("********** 新的一天:{} **********", date);
-                this.process(tsCode, date);
-                logger.info("*******************************\r\n");
+                assetLogger.info("********** 新的一天:{} **********", date);
+                capitalLogger.info("********** 新的一天:{} **********", date);
+
+                ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+                for (String tsCode : tsCodes) {
+                    executor.execute(() -> {
+                        // 设置本地线程MDC
+                        MDC.put("traceId", traceId);
+                        MDC.put("tsCode", tsCode);
+                        this.process(tsCode, date);
+                        // 统计交易记录
+//                        recordTradeMessageService.statistics(tsCode);
+                    });
+                }
+
+                executor.shutdown();
+                while(true){
+                    if(executor.isTerminated()){
+                        logger.info("*******************************\r\n");
+                        assetLogger.info("*******************************\r\n");
+                        capitalLogger.info("*******************************\r\n");
+                        break;
+                    }
+                    Thread.sleep(200);
+                }
+
             }else{
                 logger.warn("非交易日:{}", date);
             }
         }
 
-        // 统计交易记录
-        recordTradeMessageService.statistics(tsCode);
-    }
+        recordTradeMessageService.statisticsCapital();
+        logger.info("所有任务执行完成！");
 
+    }
 
     /**
      * 执行 标的 + 某一天 任务
@@ -238,30 +229,6 @@ public class StrategyServiceImpl implements StrategyService {
         tsCodes = initTsCodes.toArray(new String[initTsCodes.size()]);
     }
 
-    /**
-     * 初始化 MemoryStorage 数据 到本地线程
-     * @param tsCode
-     * @return
-     */
-    private ThreadLocal<MemoryStorage> initMemoryStorageThreadLocal(String tsCode) {
-        ThreadLocal<MemoryStorage> memoryStorageThreadLocal = MemoryStorage.memoryStorageThreadLocal;
-        MemoryStorage memoryStorage = new MemoryStorage();
-
-        List<DailyVo> daily = mongodbDataService.daily( tsCode,
-                LocalDate.parse(startDate, TimeUtil.SHORT_DATE_FORMATTER).minus(offset + 30, ChronoUnit.DAYS ).format(TimeUtil.SHORT_DATE_FORMATTER),
-                endDate);
-        HashMap<String, List<DailyVo>> dailyVoMaps = new HashMap<>();
-        dailyVoMaps.put(tsCode, daily);
-        memoryStorage.setDailyVoMaps(dailyVoMaps);
-        memoryStorage.setDailyTradeDateList(daily.stream().map(a -> a.getTrade_date()).collect(Collectors.toList()));
-
-        List<TradeDateVo> tradeDateVos = mongodbDataService.tradeCal("SSE", startDate, endDate);
-        memoryStorage.setTradeDateVoList(tradeDateVos);
-
-        memoryStorageThreadLocal.set(memoryStorage);
-
-        return memoryStorageThreadLocal;
-    }
 
 
 }

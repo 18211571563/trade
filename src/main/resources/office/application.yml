@@ -36,7 +36,7 @@ http:
 
 # 服务地址
 message:
-  url: http://10.73.129.226:3000/
+  url: http://118.89.203.94:3000
   service:
     daily: /pro_bar/<asset>/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>

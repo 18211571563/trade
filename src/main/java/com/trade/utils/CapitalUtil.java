@@ -2,6 +2,7 @@ package com.trade.utils;
 
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -148,6 +149,7 @@ public class CapitalUtil {
      * @return
      */
     public static int getTradeVolume(BigDecimal totalCapital, BigDecimal riskParameter, BigDecimal closeDeep, BigDecimal atr, int unit){
+        if(atr.compareTo(BigDecimal.ZERO) == 0 || closeDeep.compareTo(BigDecimal.ZERO) == 0 || unit == 0) return 0;
         BigDecimal tradeCapital = CapitalUtil.getTradeCapital(totalCapital, riskParameter);
         return tradeCapital.divide(atr.multiply(closeDeep).multiply(BigDecimal.valueOf(unit)), 0, BigDecimal.ROUND_DOWN).intValue();
     }
@@ -193,7 +195,13 @@ public class CapitalUtil {
      * @return
      */
     public static double average(List<BigDecimal> trList) {
-        return trList.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble();
+        try {
+            if(CollectionUtils.isEmpty(trList)) return 0;
+            return trList.stream().mapToDouble(BigDecimal::doubleValue).average().getAsDouble();
+        }catch (Exception e){
+            throw e;
+        }
+
     }
 
 }

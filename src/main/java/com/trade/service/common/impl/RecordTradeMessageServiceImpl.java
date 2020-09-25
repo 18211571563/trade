@@ -53,6 +53,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     @Override
     public void logOpen(DailyVo daily, OrderVo orderVo) {
         this.logOpen(tradeLogger, daily, orderVo);
+        this.logOpen(assetLogger, daily, orderVo);
         if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
             this.logOpen(todayTradeLogger, daily, orderVo);
         }
@@ -66,6 +67,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     @Override
     public void logClose(DailyVo daily, OrderVo orderVo) {
         this.logClose(tradeLogger, daily, orderVo);
+        this.logClose(assetLogger, daily, orderVo);
         if(daily.getTrade_date().equals(tradeConstantConfig.getToday())){ // 记录今天的交易日志
             this.logClose(todayTradeLogger, daily, orderVo);
         }
@@ -166,9 +168,9 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     public void statisticsCapital(){
         assetLogger.info("########################### {} ###############################", "资金信息");
         assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter());
-        assetLogger.info("");
-        assetLogger.info("########################### {} ###############################", "配置信息");
-        assetLogger.info(JSON.toJSONString(tradeConstantConfig));
+//        assetLogger.info("");
+//        assetLogger.info("########################### {} ###############################", "配置信息");
+//        assetLogger.info(JSON.toJSONString(tradeConstantConfig));
         assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
     }
 
@@ -185,7 +187,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
 
 
     /**
-     * 格式化平仓日志格式
+     * 格式化开仓日志格式
      * @param logger
      * @param daily
      * @param tradeOrderVo
@@ -198,13 +200,12 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
             direction = "多头";
         }
 
-        logger.info("交易 - 标的:{}, 方向:{}, 价格:{}, 交易量:{}, 交易日:{}, 数据:{}",
+        logger.info("交易 - 标的:{}, 方向:{}, 价格:{}, 交易量:{}, 交易日:{}",
                 tradeOrderVo.getTsCode(),
                 direction,
                 tradeOrderVo.getPrice(),
                 tradeOrderVo.getVolume(),
-                daily.getTrade_date(),
-                JSON.toJSONString(tradeOrderVo));
+                daily.getTrade_date());
     }
 
     /**
@@ -222,7 +223,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
             direction = "平多";
         }
 
-        logger.info("止损 - 标的:{}, 方向:{}, 损益金额:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{},  数据:{}",
+        logger.info("止损 - 标的:{}, 方向:{}, 损益金额:{},损益比例:{},交易日:{}, 开仓价格:{}, 平仓价格: {}, 交易量:{}",
                 orderVo.getTsCode(),
                 direction,
                 CapitalUtil.calcBp(daily, orderVo).doubleValue(),
@@ -230,8 +231,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
                 daily.getTrade_date(),
                 orderVo.getPrice(),
                 daily.getClose(),
-                orderVo.getVolume(),
-                JSON.toJSONString(orderVo));
+                orderVo.getVolume());
     }
 
 }

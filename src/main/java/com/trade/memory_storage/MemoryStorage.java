@@ -15,35 +15,7 @@ import java.util.Map;
  */
 public class MemoryStorage {
 
-    public Map<String, List<DailyVo>> dailyVoMaps = new HashMap<>();
-    public List<String> dailyTradeDateList = new ArrayList<>();
+    public static Map<String, List<DailyVo>> dailyVosMap = new HashMap<>();
+    public static List<TradeDateVo> tradeDateVoList = new ArrayList<>();
 
-    public List<TradeDateVo> tradeDateVoList = new ArrayList<>();
-
-    public static ThreadLocal<MemoryStorage> memoryStorageThreadLocal = new ThreadLocal<>();
-
-
-    public Map<String, List<DailyVo>> getDailyVoMaps() {
-        return dailyVoMaps;
-    }
-
-    public void setDailyVoMaps(Map<String, List<DailyVo>> dailyVoMaps) {
-        this.dailyVoMaps = dailyVoMaps;
-    }
-
-    public List<String> getDailyTradeDateList() {
-        return dailyTradeDateList;
-    }
-
-    public void setDailyTradeDateList(List<String> dailyTradeDateList) {
-        this.dailyTradeDateList = dailyTradeDateList;
-    }
-
-    public List<TradeDateVo> getTradeDateVoList() {
-        return tradeDateVoList;
-    }
-
-    public void setTradeDateVoList(List<TradeDateVo> tradeDateVoList) {
-        this.tradeDateVoList = tradeDateVoList;
-    }
 }

@@ -54,7 +54,8 @@ public class StrategyController {
 
     @GetMapping(value = "ok")
     public String ok(){
-        return "是否执行完成:" + String.valueOf(!CommonAspect.process);
+        return "是否执行完成:" + String.valueOf(!CommonAspect.process) + System.lineSeparator()
+                + "内存数据是否加载完成:" + String.valueOf(!CommonAspect.load);
     }
 
 }

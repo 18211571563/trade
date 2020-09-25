@@ -1,7 +1,11 @@
 package com.trade.service.common.impl;
 
+import com.trade.ResourceManager.ThreadPoolManager;
+import com.trade.aspect.CommonAspect;
+import com.trade.config.TradeConstantConfig;
 import com.trade.memory_storage.MemoryStorage;
 import com.trade.service.common.DataService;
+import com.trade.service.common.MemoryService;
 import com.trade.utils.CommonUtil;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
@@ -17,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Author georgy
@@ -26,13 +32,73 @@ import java.util.List;
  */
 @Service
 @Primary
-public class MemoryDataServiceImpl implements DataService {
+public class MemoryDataServiceImpl implements DataService, MemoryService {
 
+
+    @Autowired
+    private MemoryService memoryService;
     @Autowired
     @Qualifier("mongoDataServiceImpl")
     private DataService dataService;
+    @Autowired
+    private ThreadPoolManager threadPoolManager;
+
+    @Autowired
+    private TradeConstantConfig tradeConstantConfig;
 
     Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * 加载数据
+     */
+    @Override
+    public void load(){
+        // 日间数据
+        List<StockBasicVo> stockBasicVos = dataService.stock_basic();
+        stockBasicVos.forEach(stockBasicVo -> {
+            String tsCode = stockBasicVo.getTs_code();
+            this.initMemoryStockBasicVo(tsCode);
+        });
+
+        // 交易时间
+        List<TradeDateVo> tradeDateVos = dataService.tradeCal("SSE", tradeConstantConfig.getStartDate(), tradeConstantConfig.getEndDate());
+        MemoryStorage.tradeDateVoList = tradeDateVos;
+        logger.info("内存加载完成!");
+    }
+
+    @Override
+    public void asyncLoad() {
+        if(CommonAspect.load) throw new RuntimeException("程序运行中，请莫重复运行！");
+        threadPoolManager.getProcessSingleExecutorService().execute(() -> {
+            try {
+                memoryService.load();
+            } catch (Exception e) {
+                logger.error("内存数据加载失败:{}", e);
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @Override
+    public void clear() {
+        MemoryStorage.dailyVosMap.clear();
+        MemoryStorage.tradeDateVoList.clear();
+        logger.info("内存清理完成!");
+    }
+
+    /**
+     * 初始化 StockBasicVo 数据 到 本地内存
+     * @param tsCode
+     * @return
+     */
+    private void initMemoryStockBasicVo(String tsCode) {
+
+        // 初始化 日间数据
+        String startDate = LocalDate.parse(tradeConstantConfig.getStartDate(), TimeUtil.SHORT_DATE_FORMATTER).minus(tradeConstantConfig.getOffset() + 30, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER);
+        String endDate = tradeConstantConfig.getEndDate();
+        List<DailyVo> dailys = dataService.daily(tsCode, startDate, endDate);
+        MemoryStorage.dailyVosMap.put(tsCode, dailys);
+    }
 
     @Override
     public List<StockBasicVo> stock_basic() {
@@ -44,10 +110,16 @@ public class MemoryDataServiceImpl implements DataService {
         return dataService.index_basic();
     }
 
+    /**
+     * 交易日历
+     * @param exchange
+     * @param start_date
+     * @param end_date
+     * @return
+     */
     @Override
     public List<TradeDateVo> tradeCal(String exchange, String start_date, String end_date) {
-        MemoryStorage memoryStorage = MemoryStorage.memoryStorageThreadLocal.get();
-        List<TradeDateVo> tradeDateVoList = memoryStorage.getTradeDateVoList();
+        List<TradeDateVo> tradeDateVoList = MemoryStorage.tradeDateVoList;
         int start_date_i = tradeDateVoList.indexOf(new TradeDateVo(exchange, start_date));
         int end_date_i = tradeDateVoList.indexOf(new TradeDateVo(exchange, end_date));
         if(start_date_i == -1 ) return null;
@@ -66,13 +138,14 @@ public class MemoryDataServiceImpl implements DataService {
 
     @Override
     public List<DailyVo> daily(String ts_code, String start_date, String end_date) {
-        MemoryStorage memoryStorage = MemoryStorage.memoryStorageThreadLocal.get();
 
-        List<DailyVo> dailyVos = memoryStorage.dailyVoMaps.get(ts_code);
+        List<DailyVo> dailyVos = MemoryStorage.dailyVosMap.get(ts_code);
 
-        int start_date_i = CommonUtil.getValidIndexToList(memoryStorage.dailyTradeDateList,
+        List<String> dailyTradeDateList = dailyVos.stream().map(a -> a.getTrade_date()).collect(Collectors.toList());
+
+        int start_date_i = CommonUtil.getValidIndexToList(dailyTradeDateList,
                 LocalDate.parse(start_date, TimeUtil.SHORT_DATE_FORMATTER), 100, -1);
-        int end_date_i = CommonUtil.getValidIndexToList(memoryStorage.dailyTradeDateList,
+        int end_date_i = CommonUtil.getValidIndexToList(dailyTradeDateList,
                 LocalDate.parse(end_date, TimeUtil.SHORT_DATE_FORMATTER), 100, 1);
 
         if(start_date_i != -1 && end_date_i != -1 && !CollectionUtils.isEmpty(dailyVos)){
@@ -85,14 +158,18 @@ public class MemoryDataServiceImpl implements DataService {
 
     @Override
     public List<DailyVo> daily(String ts_code, String start_date, int back_day) {
-        MemoryStorage memoryStorage = MemoryStorage.memoryStorageThreadLocal.get();
-        List<DailyVo> dailyVos = memoryStorage.dailyVoMaps.get(ts_code);
-        int i = memoryStorage.dailyTradeDateList.indexOf(start_date);
+        List<DailyVo> dailyVos = MemoryStorage.dailyVosMap.get(ts_code);
 
-        if(i != -1 && !CollectionUtils.isEmpty(dailyVos)){
-            List<DailyVo> datas = dailyVos.subList(i + 1 , i + 1 + back_day);
-            return datas;
+        List<String> dailyTradeDateList = dailyVos.stream().map(a -> a.getTrade_date()).collect(Collectors.toList());
+        int i = dailyTradeDateList.indexOf(start_date);
+
+        if(dailyVos.size() >= (i + 1 + back_day) ){
+            if(i != -1 && !CollectionUtils.isEmpty(dailyVos)){
+                List<DailyVo> datas = dailyVos.subList(i + 1 , i + 1 + back_day);
+                return datas;
+            }
         }
+
         return null;
     }
 }

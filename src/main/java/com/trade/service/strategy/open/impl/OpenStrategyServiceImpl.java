@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -75,6 +76,8 @@ public class OpenStrategyServiceImpl implements OpenStrategyService {
     private void breakOpen(DailyVo daily, BigDecimal filterTrend) {
         // 计算突破点
         List<DailyVo> breakOpenDailyVo = dataService.daily(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getBreakOpenDay());
+        if(CollectionUtils.isEmpty(breakOpenDailyVo)) return;  // 算不了突破价，退出
+
         DailyVo maxOpen = CapitalUtil.getMax(breakOpenDailyVo);
         DailyVo minOpen = CapitalUtil.getMin(breakOpenDailyVo);
 

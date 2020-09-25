@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -18,7 +19,9 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by georgy on 2020-02-24.
- * 资产管理
+ * 资产管理 - 资金变动主要有2种，记录资金日志的变化主要从这2方面入手
+ *  1： 盈亏，造成资金总数的变动
+ *  2： 冻结与解冻，不影响资金总数
  */
 @Component
 public class CapitalManager {
@@ -26,6 +29,7 @@ public class CapitalManager {
     private Logger capitalLogger = LoggerFactory.getLogger("capital");
 
     private static Lock lockCapital = new ReentrantLock();
+    public static Lock lockOrderVo = new ReentrantLock();
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
@@ -182,11 +186,38 @@ public class CapitalManager {
     }
 
     /**
+     * 获取交易订单单个
+     * @param tsCode
+     * @return
+     */
+    public OrderVo getOrderVo(String tsCode){
+        lockOrderVo.lock();
+        try {
+            if(!CollectionUtils.isEmpty(this.getTradeOrders())){
+                for (OrderVo orderVo : this.getTradeOrders()) {
+                    if(orderVo.getTsCode().equals(tsCode)){
+                        return orderVo;
+                    }
+                }
+            }
+        }finally {
+            lockOrderVo.unlock();
+        }
+
+        return null;
+    }
+
+    /**
      * 添加交易订单(开仓)
      * @param orderVo
      */
     public void addTradeOrders(DailyVo daily, OrderVo orderVo){
-        CapitalManager.tradeOrders.add(orderVo);
+        lockOrderVo.lock();
+        try {
+            CapitalManager.tradeOrders.add(orderVo);
+        }finally {
+            lockOrderVo.unlock();
+        }
     }
 
     /**
@@ -194,10 +225,15 @@ public class CapitalManager {
      * @param orderVo
      */
     public void removeTradeOrders(DailyVo daily, OrderVo orderVo){
-        CapitalManager.tradeOrders.remove(orderVo);
-
-        // 平仓后记录交易历史
-        this.saveTradeOrdersHistory(daily, orderVo);
+        lockOrderVo.lock();
+        try {
+            // 平仓交易
+            CapitalManager.tradeOrders.remove(orderVo);
+            // 平仓后记录交易历史
+            this.saveTradeOrdersHistory(daily, orderVo);
+        }finally {
+            lockOrderVo.unlock();
+        }
     }
 
 

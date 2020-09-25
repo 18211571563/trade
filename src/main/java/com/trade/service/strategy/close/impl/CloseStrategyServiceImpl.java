@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -77,6 +78,8 @@ public class CloseStrategyServiceImpl implements CloseStrategyService {
     private void breakClose(DailyVo daily, OrderVo orderVo) {
         /** ################################## 计算突破价格 ##################################### **/
         List<DailyVo> breakCloseDailyVo = dataService.daily(daily.getTs_code(), daily.getTrade_date(), tradeConstantConfig.getBreakCloseDay());
+        if(CollectionUtils.isEmpty(breakCloseDailyVo)) return;  // 算不了突破价，退出
+
         DailyVo maxClose = CapitalUtil.getMax(breakCloseDailyVo);
         DailyVo minClose = CapitalUtil.getMin(breakCloseDailyVo);
 

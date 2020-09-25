@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.trade.config.TradeConstantConfig;
 import com.trade.memory_storage.MemoryStorage;
 import com.trade.service.common.DataService;
+import com.trade.service.common.impl.MemoryDataServiceImpl;
 import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.TradeDateVo;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 public class CommonAspect {
 
     public static Boolean process = false;
+    public static Boolean load = false;
 
     @Autowired
     private TradeConstantConfig tradeConstantConfig;
@@ -57,7 +59,26 @@ public class CommonAspect {
         }finally {
             process = false;
         }
-        logger.info(String.format("总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
+        logger.info(String.format("执行总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
+        return result;
+    }
+
+    /**
+     * 内存数据加载切面
+     * @param joinPoint
+     * @return
+     */
+    @Around(value="execution(public * com.trade.service.common.impl.MemoryDataServiceImpl.load())")
+    public Object loadPre(ProceedingJoinPoint joinPoint) throws Throwable {
+        load = true;
+        Date date = new Date();
+        Object result = null;
+        try {
+            result = joinPoint.proceed();
+        }finally {
+            load = false;
+        }
+        logger.info(String.format("加载总耗时：%s毫秒", String.valueOf((new Date().getTime() - date.getTime()) )) );
         return result;
     }
 
