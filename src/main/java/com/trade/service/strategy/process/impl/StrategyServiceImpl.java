@@ -111,8 +111,7 @@ public class StrategyServiceImpl implements StrategyService {
         LocalDate endDateL = LocalDate.parse(endDate, TimeUtil.SHORT_DATE_FORMATTER);
         LocalDate dateL = startDateL;
 
-        for(int i = 0; endDateL.compareTo(dateL) >= 0; dateL = dateL.plusDays(1)){
-
+        for(; endDateL.compareTo(dateL) >= 0; dateL = dateL.plusDays(1)){
             String date = dateL.format(TimeUtil.SHORT_DATE_FORMATTER);
             if(dataService.tradeCal(date)){
 
@@ -120,15 +119,16 @@ public class StrategyServiceImpl implements StrategyService {
                 assetLogger.info("********** 新的一天:{} **********", date);
                 capitalLogger.info("********** 新的一天:{} **********", date);
 
-                ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+                // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
+                ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
                 for (String tsCode : tsCodes) {
                     executor.execute(() -> {
                         // 设置本地线程MDC
                         MDC.put("traceId", traceId);
                         MDC.put("tsCode", tsCode);
                         this.process(tsCode, date);
-                        // 统计交易记录
-//                        recordTradeMessageService.statistics(tsCode);
+
                     });
                 }
 
@@ -148,6 +148,12 @@ public class StrategyServiceImpl implements StrategyService {
             }
         }
 
+
+        // 统计交易记录
+        for (String tsCode : tsCodes) {
+            recordTradeMessageService.statistics(tsCode);
+        }
+        // 统计资金信息
         recordTradeMessageService.statisticsCapital();
         logger.info("所有任务执行完成！");
 
@@ -162,7 +168,10 @@ public class StrategyServiceImpl implements StrategyService {
 
         /************************************************************** 获取今日行情 ***********************************************************************/
         List<DailyVo> dailys = dataService.daily(tsCode, date, date);
-        if(dailys == null || dailys.size() == 0) return;
+        if(dailys == null || dailys.size() == 0) {
+            logger.warn("获取不到数据, tsCode: {}, date: {}", tsCode, date);
+            return;
+        }
         DailyVo daily = dailys.get(0);
 
         /************************************************************** 获取仓位信息 ***********************************************************************/

@@ -52,7 +52,7 @@ public class CapitalManager {
 
     /**
      * 冻结金额操作(开仓)
-     * @param capital 解冻资金
+     * @param capital 资金
      */
     public synchronized void openCapital(BigDecimal capital){
         lockCapital.lock();

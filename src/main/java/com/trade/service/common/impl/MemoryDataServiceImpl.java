@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
  * @DESC TODO
  */
 @Service
-@Primary
 public class MemoryDataServiceImpl implements DataService, MemoryService {
 
 

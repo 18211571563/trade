@@ -54,15 +54,14 @@ public class TradeServiceImpl implements TradeService {
             return;
         }
 
-        /** 记录交易日志 **/
-        recordTradeMessageService.logOpen(daily, orderVo);
-
         /** 开仓 - 保存订单 **/
         BigDecimal tsCapital = orderVo.getPrice().multiply(orderVo.getVolume());
 
         capitalManager.openCapital(tsCapital);
         capitalManager.addTradeOrders(daily, orderVo);
 
+        /** 记录交易日志 **/
+        recordTradeMessageService.logOpen(daily, orderVo);
         /** 打印资金信息 **/
         recordTradeMessageService.simpleStatisticsCapital(tsCapital);
     }
@@ -70,8 +69,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public synchronized void close(DailyVo daily, OrderVo orderVo) {
-        /** 记录交易日志 **/
-        recordTradeMessageService.logClose(daily, orderVo);
+
 
         /** 核算资金 **/
         // 计算盈亏
@@ -83,6 +81,8 @@ public class TradeServiceImpl implements TradeService {
         capitalManager.closeCapital(tsCapital, bp);
         capitalManager.removeTradeOrders(daily, orderVo);
 
+        /** 记录交易日志 **/
+        recordTradeMessageService.logClose(daily, orderVo);
         /** 打印资金信息 **/
         recordTradeMessageService.simpleStatisticsCapital(tsCapital);
     }
