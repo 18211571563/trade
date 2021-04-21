@@ -1,31 +1,17 @@
 package com.trade.aspect;
 
-import com.alibaba.fastjson.JSON;
 import com.trade.config.TradeConstantConfig;
-import com.trade.memory_storage.MemoryStorage;
 import com.trade.service.common.DataService;
-import com.trade.service.common.impl.MemoryDataServiceImpl;
-import com.trade.utils.TimeUtil;
-import com.trade.vo.DailyVo;
-import com.trade.vo.TradeDateVo;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by georgy on 2018/11/26.
