@@ -132,9 +132,9 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
                     daily.getTrade_date());
 
             // sucessCount: 胜利次数+1
-            if(bp.compareTo(BigDecimal.ZERO) > 0){
-                sucessCount = sucessCount.add(BigDecimal.ONE);
-            }
+//            if(bp.compareTo(BigDecimal.ZERO) > 0){
+//                sucessCount = sucessCount.add(BigDecimal.ONE);
+//            }
 
             // totalBp
             totalBp = totalBp.add(bp);
@@ -152,10 +152,10 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
             }
         }
 
-        sfRate = sucessCount.divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
+        sfRate = sucessCount.multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
         assetLogger.info("-");
-        assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜负次数:{}, 胜负比例:{}, 最大收益比例:{}, 最大回撤比例:{}",
-                totalBp, totalBpRate, sucessCount, sfRate, maxBpRate, minBpRate);
+        assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜率:{}%, 胜负次数:{}, 最大收益比例:{}, 最大回撤比例:{}",
+                totalBp, totalBpRate, sfRate, sucessCount, maxBpRate, minBpRate);
 
         assetLogger.info("----------------------------------------------------------------------------------------");
         assetLogger.info(" ");
@@ -171,7 +171,8 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
 //        assetLogger.info("");
 //        assetLogger.info("########################### {} ###############################", "配置信息");
 //        assetLogger.info(JSON.toJSONString(tradeConstantConfig));
-        assetLogger.info("------------------------------------------ {} ----------------------------------------------", "END");
+        assetLogger.info("------------------------------------------ {}% ----------------------------------------------",
+                capitalManager.getTotalCapital().subtract(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital())).multiply(new BigDecimal(100)).divide(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()), 4, BigDecimal.ROUND_HALF_UP));
     }
 
     /**
