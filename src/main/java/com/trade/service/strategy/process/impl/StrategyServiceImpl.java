@@ -5,6 +5,7 @@ import com.trade.capital.CapitalManager;
 import com.trade.config.TradeConstantConfig;
 import com.trade.memory_storage.MemoryStorage;
 import com.trade.service.common.DataService;
+import com.trade.service.common.MemoryService;
 import com.trade.service.common.RecordTradeMessageService;
 import com.trade.service.common.TradeService;
 import com.trade.service.strategy.close.CloseStrategyService;
@@ -61,9 +62,6 @@ public class StrategyServiceImpl implements StrategyService {
     private TradeConstantConfig tradeConstantConfig;
     @Autowired
     private DataService dataService;
-    @Autowired
-    @Qualifier("mongoDataServiceImpl")
-    private DataService mongodbDataService;
     @Autowired
     private TradeService tradeService;
     @Autowired

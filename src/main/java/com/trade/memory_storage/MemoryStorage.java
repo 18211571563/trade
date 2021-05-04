@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class MemoryStorage {
 
-    public static Map<String, List<DailyVo>> dailyVosMap = new HashMap<>();
+    public static Map<String, Map<String, DailyVo>> dailyVosMap = new HashMap<>();
     public static List<TradeDateVo> tradeDateVoList = new ArrayList<>();
 
 }

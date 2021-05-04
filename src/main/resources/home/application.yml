@@ -15,7 +15,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://118.89.203.94:27017/trade
+      uri: mongodb://localhost:27017/trade
 
 
 
@@ -36,9 +36,10 @@ http:
 
 # 服务地址
 message:
-  url: http://118.89.203.94:3000
+  url: http://localhost:3000
   service:
-    daily: /pro_bar/<asset>/<ts_code>/<start_date>/<end_date>
+#    daily: /pro_bar/<asset>/<ts_code>/<start_date>/<end_date>
+    daily: /daily/<ts_code>/<start_date>/<end_date>
     trade_cal: /trade_cal/<exchange>/<start_date>/<end_date>
     stock_basic: /stock_basic
     index_basic: /index_basic/<market>

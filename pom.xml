@@ -137,6 +137,9 @@
             <properties>
                 <env>home</env>
             </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
         </profile>
 
         <profile>
@@ -144,9 +147,6 @@
             <properties>
                 <env>office</env>
             </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
         </profile>
 
         <profile>
