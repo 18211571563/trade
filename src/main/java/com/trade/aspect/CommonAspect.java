@@ -54,7 +54,7 @@ public class CommonAspect {
      * @param joinPoint
      * @return
      */
-    @Around(value="execution(public * com.trade.service.common.impl.MemoryDataServiceImpl.load())")
+    @Around(value="execution(public * com.trade.service.common.impl.DailyMemoryDataServiceImpl.load())")
     public Object loadPre(ProceedingJoinPoint joinPoint) throws Throwable {
         load = true;
         Date date = new Date();

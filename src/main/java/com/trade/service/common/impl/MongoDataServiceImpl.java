@@ -87,11 +87,21 @@ public class MongoDataServiceImpl implements DataService {
      */
     @Override
     public List<DailyVo> daily(String ts_code, String start_date, String end_date) {
-        Query query = new Query(
-                Criteria.where("ts_code").is(ts_code)
-                        .andOperator(
-                                Criteria.where("trade_date").gte(start_date),
-                                Criteria.where("trade_date").lte(end_date) ));
+        Query query = null;
+        if(ts_code.equals("ALL")){
+            query = new Query(
+                    Criteria.where("ts_code").exists(true)
+                            .andOperator(
+                                    Criteria.where("trade_date").gte(start_date),
+                                    Criteria.where("trade_date").lte(end_date) ));
+        }else{
+            query = new Query(
+                    Criteria.where("ts_code").is(ts_code)
+                            .andOperator(
+                                    Criteria.where("trade_date").gte(start_date),
+                                    Criteria.where("trade_date").lte(end_date) ));
+        }
+
         query.with(Sort.by( Sort.Order.desc("trade_date") ));
         List<DailyVo> dailys = mongoTemplate.find(query, DailyVo.class, "daily");
         return dailys;
@@ -112,4 +122,5 @@ public class MongoDataServiceImpl implements DataService {
         List<DailyVo> data = this.daily(ts_code,startDateL.format(TimeUtil.SHORT_DATE_FORMATTER),  endDateL.format(TimeUtil.SHORT_DATE_FORMATTER));
         return data.subList(0, back_day);
     }
+
 }

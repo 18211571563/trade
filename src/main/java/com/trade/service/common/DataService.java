@@ -26,6 +26,4 @@ public interface DataService {
     List<DailyVo> daily(String ts_code, String start_date, String end_date);
 
     List<DailyVo> daily(String ts_code, String start_date, int back_day);
-
-
 }
