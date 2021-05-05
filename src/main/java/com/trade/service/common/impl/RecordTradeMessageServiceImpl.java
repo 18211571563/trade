@@ -155,7 +155,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
         sfRate = sucessCount.multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(orderBPVos.size()), 2, BigDecimal.ROUND_HALF_UP);
         assetLogger.info("-");
         assetLogger.info("交易统计 - 总损益:{}, 总损益比例:{}, 胜率:{}%, 胜负次数:{}, 最大收益比例:{}, 最大回撤比例:{}",
-                totalBp, totalBpRate, sfRate, sucessCount, maxBpRate, minBpRate);
+                totalBp, totalBpRate , sfRate, sucessCount, maxBpRate, minBpRate);
 
         assetLogger.info("----------------------------------------------------------------------------------------");
         assetLogger.info(" ");

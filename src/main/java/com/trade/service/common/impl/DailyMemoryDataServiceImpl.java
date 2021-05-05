@@ -52,6 +52,9 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
      */
     @Override
     public void load(){
+        /** 标的池 **/
+        MemoryStorage.stockBasicVoList = dataService.stock_basic();
+
         /** 交易时间 **/
         String startDate = LocalDate.parse(tradeConstantConfig.getStartDate(), TimeUtil.SHORT_DATE_FORMATTER).minus(tradeConstantConfig.getOffset() + 30, ChronoUnit.DAYS).format(TimeUtil.SHORT_DATE_FORMATTER);
         String endDate = tradeConstantConfig.getEndDate();
@@ -96,7 +99,7 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
 
     @Override
     public List<StockBasicVo> stock_basic() {
-        return dataService.stock_basic();
+        return MemoryStorage.stockBasicVoList;
     }
 
     @Override
@@ -142,7 +145,7 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
                 datas.add(dailyVo);
             }
         }
-
+        Collections.reverse(datas);
         return datas;
     }
 
@@ -161,7 +164,9 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
                     if(dailyVo != null) datas.add(dailyVo);
                 }
             }
-            return datas.subList(datas.size() - back_day, datas.size());
+            datas = datas.subList(datas.size() - back_day, datas.size());
+            Collections.reverse(datas);
+            return datas;
         }
 
         return null;

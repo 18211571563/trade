@@ -1,6 +1,7 @@
 package com.trade.memory_storage;
 
 import com.trade.vo.DailyVo;
+import com.trade.vo.StockBasicVo;
 import com.trade.vo.TradeDateVo;
 
 import java.util.ArrayList;
@@ -17,5 +18,6 @@ public class MemoryStorage {
 
     public static Map<String, Map<String, DailyVo>> dailyVosMap = new HashMap<>();
     public static List<TradeDateVo> tradeDateVoList = new ArrayList<>();
+    public static List<StockBasicVo> stockBasicVoList = new ArrayList<>();
 
 }
