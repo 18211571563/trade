@@ -5,6 +5,7 @@ import com.trade.config.TradeConstantConfig;
 import com.trade.service.common.DataService;
 import com.trade.service.common.TradeService;
 import com.trade.service.strategy.close.BullCloseStrategyService;
+import com.trade.utils.TimeUtil;
 import com.trade.vo.DailyVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * @Author georgy
@@ -41,7 +43,14 @@ public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
     public void bullBreakRClose(DailyVo daily, OrderVo orderVo, BigDecimal bullClosePrice) {
         // 判断是否持有多头头寸
         if(orderVo != null && orderVo.getDirection() == 1){
+            // 如果当前价小于止损价，进行平仓
             if(new BigDecimal(daily.getClose()).compareTo(bullClosePrice) < 0) {
+                tradeService.close(daily, orderVo);
+            }else if(
+                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(7)) > 0 && // 当前时间超过7天
+                    new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) < 0 // 亏损 = 当前价小于交易价
+            ){
+                // 如果超过时间还是亏损，则平仓
                 tradeService.close(daily, orderVo);
             }
         }
