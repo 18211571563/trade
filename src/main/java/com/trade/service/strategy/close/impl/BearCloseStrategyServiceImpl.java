@@ -37,6 +37,13 @@ public class BearCloseStrategyServiceImpl implements BearCloseStrategyService {
         if(orderVo != null && orderVo.getDirection() == 0){
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(maxClose.getClose())) > 0){
                 tradeService.close(daily, orderVo);
+            }else if(
+                    tradeConstantConfig.getUseTimeClose() &&
+                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
+                    new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) > 0 // 亏损 = 当前价大于交易价
+            ){
+                // 如果超过时间还是亏损，则平仓
+                tradeService.close(daily, orderVo);
             }
         }
     }
@@ -48,8 +55,9 @@ public class BearCloseStrategyServiceImpl implements BearCloseStrategyService {
             if(new BigDecimal(daily.getClose()).compareTo(bearClosePrice) > 0){
                 tradeService.close(daily, orderVo);
             }else if(
-                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(7)) > 0 && // 当前时间超过7天
-                            new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) > 0 // 亏损 = 当前价大于交易价
+                    tradeConstantConfig.getUseTimeClose() &&
+                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
+                    new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) > 0 // 亏损 = 当前价大于交易价
             ){
                 // 如果超过时间还是亏损，则平仓
                 tradeService.close(daily, orderVo);

@@ -118,28 +118,28 @@ public class StrategyServiceImpl implements StrategyService {
                 capitalLogger.info("********** 新的一天:{} **********", date);
 
                 // 创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待
-                ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+//                ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
                 for (String tsCode : tsCodes) {
-                    executor.execute(() -> {
+//                    executor.execute(() -> {
                         // 设置本地线程MDC
                         MDC.put("traceId", traceId);
                         MDC.put("tsCode", tsCode);
                         this.process(tsCode, date);
 
-                    });
+//                    });
                 }
 
-                executor.shutdown();
-                while(true){
-                    if(executor.isTerminated()){
+//                executor.shutdown();
+//                while(true){
+//                    if(executor.isTerminated()){
                         logger.info("*******************************\r\n");
                         assetLogger.info("*******************************\r\n");
                         capitalLogger.info("*******************************\r\n");
-                        break;
-                    }
-                    Thread.sleep(200);
-                }
+//                        break;
+//                    }
+//                    Thread.sleep(200);
+//                }
 
             }else{
                 logger.warn("非交易日:{}", date);

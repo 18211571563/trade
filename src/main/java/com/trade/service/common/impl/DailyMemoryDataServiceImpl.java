@@ -142,7 +142,7 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
             Map<String, DailyVo> stringDailyVoMap = MemoryStorage.dailyVosMap.get(String.valueOf(i));
             if(stringDailyVoMap != null){
                 DailyVo dailyVo = stringDailyVoMap.get(ts_code);
-                datas.add(dailyVo);
+                if(dailyVo != null) datas.add(dailyVo);
             }
         }
         Collections.reverse(datas);
@@ -156,7 +156,8 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
         List<String> dailyTradeDateList = MemoryStorage.tradeDateVoList.stream().map(a -> a.getCalDate()).collect(Collectors.toList());
         int i = dailyTradeDateList.indexOf(start_date);
         if(i != -1){
-            List<String> subDailyTradeDateList = dailyTradeDateList.subList(i - back_day * 2, i); // 包含非交易日
+            int bindex = (i - back_day * 2) < 0? 0 : i - (back_day * 2);
+            List<String> subDailyTradeDateList = dailyTradeDateList.subList(bindex, i); // 包含非交易日
             for (String tradeDateVo : subDailyTradeDateList) {
                 Map<String, DailyVo> stringDailyVoMap = MemoryStorage.dailyVosMap.get(tradeDateVo);
                 if(stringDailyVoMap != null){
@@ -164,9 +165,11 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
                     if(dailyVo != null) datas.add(dailyVo);
                 }
             }
-            datas = datas.subList(datas.size() - back_day, datas.size());
-            Collections.reverse(datas);
-            return datas;
+            if(datas.size() >= back_day) {
+                datas = datas.subList(datas.size() - back_day, datas.size());
+                Collections.reverse(datas);
+                return datas;
+            }
         }
 
         return null;

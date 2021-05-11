@@ -83,6 +83,14 @@ public class TradeConstantConfig {
     @Value("${trade.constant.threadCount}")
     private Integer threadCount;
 
+    /** 是否时间止损 **/
+    @Value("${trade.constant.useTimeClose}")
+    private Boolean useTimeClose;
+
+    /** 时间止损天数 **/
+    @Value("${trade.constant.timeCloseDay}")
+    private Integer timeCloseDay;
+
     public String getOpenStrategyCode() {
         return openStrategyCode;
     }
@@ -225,5 +233,21 @@ public class TradeConstantConfig {
 
     public void setThreadCount(Integer threadCount) {
         this.threadCount = threadCount;
+    }
+
+    public Boolean getUseTimeClose() {
+        return useTimeClose;
+    }
+
+    public void setUseTimeClose(Boolean useTimeClose) {
+        this.useTimeClose = useTimeClose;
+    }
+
+    public Integer getTimeCloseDay() {
+        return timeCloseDay;
+    }
+
+    public void setTimeCloseDay(Integer timeCloseDay) {
+        this.timeCloseDay = timeCloseDay;
     }
 }

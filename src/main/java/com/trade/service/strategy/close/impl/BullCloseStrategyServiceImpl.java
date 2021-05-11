@@ -25,6 +25,8 @@ import java.time.LocalDate;
 public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
 
     @Autowired
+    private TradeConstantConfig tradeConstantConfig;
+    @Autowired
     private TradeService tradeService;
 
     Logger logger = LoggerFactory.getLogger(getClass());
@@ -34,6 +36,13 @@ public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
         // 判断是否持有多头头寸
         if(orderVo != null && orderVo.getDirection() == 1){
             if(new BigDecimal(daily.getClose()).compareTo(new BigDecimal(minClose.getClose())) < 0){
+                tradeService.close(daily, orderVo);
+            }else if(
+                    tradeConstantConfig.getUseTimeClose() &&
+                            LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
+                            new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) < 0 // 亏损 = 当前价小于交易价
+            ){
+                // 如果超过时间还是亏损，则平仓
                 tradeService.close(daily, orderVo);
             }
         }
@@ -47,7 +56,8 @@ public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
             if(new BigDecimal(daily.getClose()).compareTo(bullClosePrice) < 0) {
                 tradeService.close(daily, orderVo);
             }else if(
-                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(7)) > 0 && // 当前时间超过7天
+                    tradeConstantConfig.getUseTimeClose() &&
+                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
                     new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) < 0 // 亏损 = 当前价小于交易价
             ){
                 // 如果超过时间还是亏损，则平仓
