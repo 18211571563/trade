@@ -43,11 +43,15 @@ public class CapitalManager {
     /** 订单历史记录 **/
     private static Map<String, List<OrderBPVo>> tradeOrdersHistoryMap;
 
+    /** 交易失败次数 **/
+    private static int failedTradeCount = 0;
+
     public void init(){
         tradeOrders = Collections.synchronizedList(new ArrayList<>());
         assetVo = AssetVo.create(   BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()),
                                     BigDecimal.valueOf(tradeConstantConfig.getRiskParameter()));
         tradeOrdersHistoryMap = new Hashtable<>();
+        failedTradeCount = 0;
     }
 
     /**
@@ -236,6 +240,20 @@ public class CapitalManager {
         }
     }
 
+    /**
+     * 获取交易失败次数
+     * @return
+     */
+    public int getFailedTradeCount() {
+        return this.failedTradeCount;
+    }
 
+    /**
+     * 添加交易失败次数记录
+     * @return
+     */
+    public synchronized void addFailedTradeCount() {
+        this.failedTradeCount = this.getFailedTradeCount() + 1;
+    }
 
 }

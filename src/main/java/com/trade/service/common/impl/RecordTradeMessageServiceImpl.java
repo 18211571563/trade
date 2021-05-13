@@ -14,6 +14,7 @@ import com.trade.vo.OrderBPVo;
 import com.trade.vo.OrderVo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     Logger tradeLogger = LoggerFactory.getLogger("trade");
     Logger todayTradeLogger = LoggerFactory.getLogger("todayTrade");
     Logger assetLogger = LoggerFactory.getLogger("asset");
+    Logger totalLogger = LoggerFactory.getLogger("total");
 
 
     /** ################################################### public ########################################################################################## **/
@@ -167,12 +169,16 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
     @Override
     public void statisticsCapital(){
         assetLogger.info("########################### {} ###############################", "资金信息");
-        assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter());
-//        assetLogger.info("");
-//        assetLogger.info("########################### {} ###############################", "配置信息");
-//        assetLogger.info(JSON.toJSONString(tradeConstantConfig));
+        assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}, 交易失败次数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter(), capitalManager.getFailedTradeCount());
         assetLogger.info("------------------------------------------ {}% ----------------------------------------------",
                 capitalManager.getTotalCapital().subtract(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital())).multiply(new BigDecimal(100)).divide(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()), 4, BigDecimal.ROUND_HALF_UP));
+
+        totalLogger.info("########################### {} ###############################", MDC.get("traceId"));
+        totalLogger.info("配置信息：{}", JSON.toJSONString(tradeConstantConfig));
+        totalLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}, 交易失败次数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter(), capitalManager.getFailedTradeCount());
+        totalLogger.info("------------------------------------------ {}% ----------------------------------------------",
+                capitalManager.getTotalCapital().subtract(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital())).multiply(new BigDecimal(100)).divide(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()), 4, BigDecimal.ROUND_HALF_UP));
+        totalLogger.info(System.lineSeparator());
     }
 
     /**

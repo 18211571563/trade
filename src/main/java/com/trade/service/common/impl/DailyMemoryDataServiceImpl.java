@@ -42,6 +42,10 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
     private DataService dataService;
 
     @Autowired
+    @Qualifier("dailyMemoryDataServiceImpl")
+    private MemoryService memoryService;
+
+    @Autowired
     private ThreadPoolManager threadPoolManager;    // 线程池
     @Autowired
     private TradeConstantConfig tradeConstantConfig;    // 交易常量
@@ -82,7 +86,7 @@ public class DailyMemoryDataServiceImpl implements DataService,MemoryService {
         if(CommonAspect.load) throw new RuntimeException("程序运行中，请莫重复运行！");
         threadPoolManager.getProcessSingleExecutorService().execute(() -> {
             try {
-                this.load();
+                memoryService.load();
             } catch (Exception e) {
                 logger.error("内存数据加载失败:{}", e);
                 e.printStackTrace();

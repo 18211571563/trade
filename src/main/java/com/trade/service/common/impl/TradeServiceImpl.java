@@ -46,11 +46,13 @@ public class TradeServiceImpl implements TradeService {
         if(BigDecimal.ZERO.compareTo(orderVo.getVolume()) == 0){
             tradeLogger.error("交易量不可为零，标的:{}，数量:{} ", orderVo.getTsCode(), orderVo.getVolume());
             assetLogger.error("交易量不可为零，标的:{}，数量:{} ", orderVo.getTsCode(), orderVo.getVolume());
+            capitalManager.addFailedTradeCount();
             return;
         }
         if(capitalManager.getUsableCapital().compareTo(orderVo.getPrice().multiply(orderVo.getVolume())) < 0){
             tradeLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", capitalManager.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
             assetLogger.error("可用金额不足，可用金额:{}, 订单金额:{}", capitalManager.getUsableCapital(), orderVo.getPrice().multiply(orderVo.getVolume()));
+            capitalManager.addFailedTradeCount();
             return;
         }
 

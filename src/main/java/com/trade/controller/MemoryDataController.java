@@ -28,6 +28,7 @@ public class MemoryDataController {
     @GetMapping(value = "load")
     public String load(){
         if(CommonAspect.load) throw new RuntimeException("数据加载中，请莫清除！");
+        if(CommonAspect.process) throw new RuntimeException("策略运行中，请莫清除！");
         memoryService.clear();
         memoryService.asyncLoad();
         return "success";
@@ -36,6 +37,7 @@ public class MemoryDataController {
     @GetMapping(value = "clear")
     public String clear(){
         if(CommonAspect.load) throw new RuntimeException("数据加载中，请莫清除！");
+        if(CommonAspect.process) throw new RuntimeException("策略运行中，请莫清除！");
         memoryService.clear();
         return "success";
     }

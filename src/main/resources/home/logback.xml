@@ -144,6 +144,21 @@
         </sift>
     </appender>
 
+    <appender name="total" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>D:/workspace/logs/trade/total.txt</File>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <fileNamePattern>D:/workspace/logs/trade/total_%d{yyyy-MM-dd}.txt</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${DEFAULT_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
@@ -168,5 +183,9 @@
     <logger name="capital" level="INFO" additivity="false">
         <appender-ref ref="capital"/>
         <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="total" level="INFO" additivity="false">
+        <appender-ref ref="total"/>
     </logger>
 </configuration>
