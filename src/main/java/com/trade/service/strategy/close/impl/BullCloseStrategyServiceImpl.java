@@ -44,11 +44,12 @@ public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
                 tradeService.close(daily, orderVo);
             }
 
+            // 是否需要止损
+            if(!tradeConstantConfig.getUseTimeClose()) return;
             // 时间止损1
             if(
-                    tradeConstantConfig.getUseTimeClose() &&
-                            LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
-                            new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) < 0 // 亏损 = 当前价小于交易价
+                    LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
+                    new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) < 0 // 亏损 = 当前价小于交易价
             ){
                 // 如果超过时间还是亏损，则平仓
                 tradeService.close(daily, orderVo);
@@ -83,9 +84,10 @@ public class BullCloseStrategyServiceImpl implements BullCloseStrategyService {
                 return;
             }
 
+            // 是否需要止损
+            if(!tradeConstantConfig.getUseTimeClose()) return;
             // 时间止损1
             if(
-                    tradeConstantConfig.getUseTimeClose() &&
                     LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
                     new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) < 0 // 亏损 = 当前价小于交易价
             ){

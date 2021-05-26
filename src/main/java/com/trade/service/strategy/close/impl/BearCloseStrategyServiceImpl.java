@@ -44,9 +44,10 @@ public class BearCloseStrategyServiceImpl implements BearCloseStrategyService {
                 return;
             }
 
+            // 是否需要止损
+            if(!tradeConstantConfig.getUseTimeClose()) return;
             // 时间止损1
             if(
-                    tradeConstantConfig.getUseTimeClose() &&
                     LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
                     new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) > 0 // 亏损 = 当前价大于交易价
             ){
@@ -87,9 +88,10 @@ public class BearCloseStrategyServiceImpl implements BearCloseStrategyService {
                 return;
             }
 
+            // 是否需要止损
+            if(!tradeConstantConfig.getUseTimeClose()) return;
             // 时间止损1
             if(
-                    tradeConstantConfig.getUseTimeClose() &&
                     LocalDate.parse(daily.getTrade_date(), TimeUtil.SHORT_DATE_FORMATTER).compareTo(orderVo.getTime().plusDays(tradeConstantConfig.getTimeCloseDay())) > 0 && // 当前时间超过7天
                     new BigDecimal(daily.getClose()).compareTo(orderVo.getPrice()) > 0 // 亏损 = 当前价大于交易价
             ){
