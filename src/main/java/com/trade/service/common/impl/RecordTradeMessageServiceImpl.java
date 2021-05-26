@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author georgy
@@ -120,7 +121,7 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
 
         OrderVo orderVo = tradeService.getOrderVo(tsCode);
         if(orderVo != null){
-            DailyVo daily = dataService.daily(orderVo.getTsCode(), tradeConstantConfig.getStartDate(), tradeConstantConfig.getEndDate()).get(0);
+            DailyVo daily = dataService.daily(orderVo.getTsCode(), tradeConstantConfig.getStartDate(), tradeConstantConfig.getEndDate()).get(0); // 获取最后一天的交易价
             BigDecimal bp = CapitalUtil.calcBp(orderVo.getDirection(), orderVo.getPrice(), orderVo.getVolume(), daily.getClose());
             BigDecimal bp_rate = CapitalUtil.calcBpRate(orderVo.getDirection(), orderVo.getPrice(), daily.getClose());
             assetLogger.info("-");
@@ -168,15 +169,50 @@ public class RecordTradeMessageServiceImpl implements RecordTradeMessageService 
      */
     @Override
     public void statisticsCapital(){
+        // 计算每笔交易的平均bpr
+        Map<String, List<OrderBPVo>> tradeOrdersHistoryMap = capitalManager.getTradeOrdersHistoryMap();
+        int tscodeCount = 0; // 标的次数
+        int tradeCount = 0;  // 交易次数
+        BigDecimal totalBpRate = BigDecimal.ZERO; // 总损益比例
+
+        for(Map.Entry<String, List<OrderBPVo>> entry : tradeOrdersHistoryMap.entrySet()){
+            String tsCode = entry.getKey();
+            List<OrderBPVo> orderBPVos = entry.getValue();
+            if(orderBPVos == null) return;
+            tscodeCount += 1;
+
+            // 计算历史
+            for (OrderBPVo orderBPVo : orderBPVos) {
+                if(orderBPVo == null) return;
+                tradeCount += 1;
+                totalBpRate = totalBpRate.add(orderBPVo.getBpRate());
+            }
+
+            OrderVo orderVo = tradeService.getOrderVo(tsCode);
+            if(orderVo != null){
+                DailyVo daily = dataService.daily(orderVo.getTsCode(), tradeConstantConfig.getStartDate(), tradeConstantConfig.getEndDate()).get(0); // 获取最后一天的交易价
+                BigDecimal bp_rate = CapitalUtil.calcBpRate(orderVo.getDirection(), orderVo.getPrice(), daily.getClose());
+                tradeCount += 1;
+                totalBpRate = totalBpRate.add(bp_rate);
+            }
+        }
+
+        BigDecimal totalBpRateByTradeCount = totalBpRate.divide(BigDecimal.valueOf(tradeCount), 8, BigDecimal.ROUND_HALF_UP);   // 每次交易平均损益率
+        BigDecimal totalBpRateByTscodeCount = totalBpRate.divide(BigDecimal.valueOf(tscodeCount), 8, BigDecimal.ROUND_HALF_UP); // 每个标的平均损益率
+
         assetLogger.info("########################### {} ###############################", "资金信息");
         assetLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}, 交易失败次数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter(), capitalManager.getFailedTradeCount());
-        assetLogger.info("------------------------------------------ {}% ----------------------------------------------",
+        assetLogger.info("------------------------------------------ {}%,{}%,{}% ----------------------------------------------",
+                totalBpRateByTradeCount,
+                totalBpRateByTscodeCount,
                 capitalManager.getTotalCapital().subtract(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital())).multiply(new BigDecimal(100)).divide(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()), 4, BigDecimal.ROUND_HALF_UP));
 
         totalLogger.info("########################### {} ###############################", MDC.get("traceId"));
         totalLogger.info("配置信息：{}", JSON.toJSONString(tradeConstantConfig));
         totalLogger.info("资金信息 - 总资金:{}, 可用资金:{}, 冻结资金: {}, 风险系数:{}, 交易失败次数:{}",capitalManager.getTotalCapital(), capitalManager.getUsableCapital(), capitalManager.getFrozenCapital(), capitalManager.getRiskParameter(), capitalManager.getFailedTradeCount());
-        totalLogger.info("------------------------------------------ {}% ----------------------------------------------",
+        totalLogger.info("------------------------------------------ {}%,{}%,{}% ----------------------------------------------",
+                totalBpRateByTradeCount,
+                totalBpRateByTscodeCount,
                 capitalManager.getTotalCapital().subtract(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital())).multiply(new BigDecimal(100)).divide(BigDecimal.valueOf(tradeConstantConfig.getTotalCapital()), 4, BigDecimal.ROUND_HALF_UP));
         totalLogger.info(System.lineSeparator());
     }
