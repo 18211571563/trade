@@ -160,29 +160,25 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <root level="ERROR">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="rollingFile"/>
     </root>
 
     <logger name="trade" level="INFO" additivity="false">
         <appender-ref ref="trade"/>
-        <appender-ref ref="STDOUT" />
     </logger>
 
     <logger name="todayTrade" level="INFO" additivity="false">
         <appender-ref ref="todayTrade"/>
-        <appender-ref ref="STDOUT" />
     </logger>
 
     <logger name="asset" level="INFO" additivity="false">
         <appender-ref ref="asset"/>
-        <appender-ref ref="STDOUT" />
     </logger>
 
     <logger name="capital" level="INFO" additivity="false">
         <appender-ref ref="capital"/>
-        <appender-ref ref="STDOUT" />
     </logger>
 
     <logger name="total" level="INFO" additivity="false">

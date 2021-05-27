@@ -28,12 +28,8 @@ public class ConfigController {
     private MemoryService memoryService;
 
     @GetMapping(value = "/update")
-    public String updateConfig(TradeConstantConfig config) throws InvocationTargetException, IllegalAccessException, InterruptedException {
+    public String updateConfig(TradeConstantConfig config) {
         BeanUtils.copyProperties(config, tradeConstantConfig, CommonUtil.getNullPropertyNames(config));
-//        Thread.sleep(500);
-//        memoryService.clear();
-//        Thread.sleep(500);
-//        memoryService.asyncLoad();
         return "success";
     }
 
